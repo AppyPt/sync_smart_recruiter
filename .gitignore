@@ -1,0 +1,10 @@
+data
+__pycache__
+downloaded_resumes
+debug_files
+
+__pycache__/candidate_extractor.cpython-311.pyc
+data/candidates_capturados.xlsx
+__pycache__/image_processor.cpython-311.pyc
+__pycache__/region_calibrator.cpython-311.pyc
+__pycache__/smart_recruiter_bot.cpython-311.pyc

@@ -1,0 +1,74 @@
+{
+    "regions": {
+        "Lista de Candidatos": {
+            "left": 599,
+            "top": 574,
+            "width": 1047,
+            "height": 554
+        },
+        "C\u00e9lula de Candidato (com c\u00edrculo de perfil)": {
+            "left": 599,
+            "top": 574,
+            "width": 1043,
+            "height": 176
+        },
+        "Nome (Relativo ao C\u00edrculo)": {
+            "left": 724,
+            "top": 593,
+            "width": 353,
+            "height": 37
+        },
+        "Nome (Relativo ao C\u00edrculo)_offset_from_circle": {
+            "offset_x": 36,
+            "offset_y": -51,
+            "width": 353,
+            "height": 37
+        },
+        "Nome (Dentro da C\u00e9lula)_rel_to_cell": {
+            "left": 36,
+            "top": -51,
+            "width": 353,
+            "height": 37
+        },
+        "Perfil (Relativo ao C\u00edrculo)": {
+            "left": 722,
+            "top": 629,
+            "width": 355,
+            "height": 32
+        },
+        "Perfil (Relativo ao C\u00edrculo)_offset_from_circle": {
+            "offset_x": 34,
+            "offset_y": -15,
+            "width": 355,
+            "height": 32
+        },
+        "Perfil (Dentro da C\u00e9lula)_rel_to_cell": {
+            "left": 34,
+            "top": -15,
+            "width": 355,
+            "height": 32
+        },
+        "\u00c1rea de Busca do 'Latest Resume' (P\u00e1gina do Perfil)": {
+            "left": 244,
+            "top": 281,
+            "width": 953,
+            "height": 197
+        }
+    },
+    "anchors": {},
+    "reference_profile_circle_center": {
+        "x": 688,
+        "y": 644,
+        "radius": 31
+    },
+    "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "resume_download_directory": "C:\\Users\\paulo.correia.montei\\Projects\\find-best\\downloaded_resumes",
+    "azure_endpoint": "https://deliveryaihub7596701848.openai.azure.com/openai/deployments/o3-mini/chat/completions?api-version=2025-01-01-preview",
+    "azure_api_key": "COLOQUE AQUI A CHAVE DA SUA API AZURE OPENAI",
+    "azure_deployment": "o3-mini",
+    "azure_api_version": "2024-12-01-preview",
+    "resume_link_text": "Latest Resume",
+    "context_menu_save_as_option_index": 5,
+    "max_scroll_iterations": 2,
+    "scroll_interval": 2.0
+}
