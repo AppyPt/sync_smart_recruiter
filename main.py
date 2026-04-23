@@ -426,11 +426,7 @@ class SmartRecruiterGUI:
         self.results_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.results_tab, text="Resultados")
 
-        self.filter_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.filter_tab, text="Filtrar com IA")
         
-        self.cv_analysis_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.cv_analysis_tab, text="Análise de CVs")
         
         self.settings_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.settings_tab, text="Configurações")
@@ -438,8 +434,7 @@ class SmartRecruiterGUI:
         self.setup_capture_tab()
         self.setup_calibration_tab()
         self.setup_results_tab()
-        self.setup_filter_tab()
-        self.setup_cv_analysis_tab()
+        
         self.setup_settings_tab()
         
         self.status_var = tk.StringVar()
@@ -640,33 +635,7 @@ class SmartRecruiterGUI:
         self.tesseract_path_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
         ttk.Button(tesseract_frame, text="Procurar...", command=self.browse_tesseract_path).pack(side=tk.LEFT, padx=(5,0))
 
-        # --- Configurações do Azure OpenAI ---
-        ttk.Label(settings_frame, text="--- Configurações do Azure OpenAI ---", 
-                font=('Arial', 10, 'bold')).pack(pady=(15, 5), anchor='w', padx=5)
-
-        azure_endpoint_frame = ttk.Frame(settings_frame)
-        azure_endpoint_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(azure_endpoint_frame, text="Azure Endpoint:", width=20).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.azure_endpoint_entry = ttk.Entry(azure_endpoint_frame, textvariable=self.azure_endpoint_var, width=60)
-        self.azure_endpoint_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
-
-        azure_key_frame = ttk.Frame(settings_frame)
-        azure_key_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(azure_key_frame, text="Azure API Key:", width=20).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.azure_api_key_entry = ttk.Entry(azure_key_frame, textvariable=self.azure_api_key_var, width=60, show="*")
-        self.azure_api_key_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
-
-        azure_deployment_frame = ttk.Frame(settings_frame)
-        azure_deployment_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(azure_deployment_frame, text="Azure Deployment Name:", width=20).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.azure_deployment_entry = ttk.Entry(azure_deployment_frame, textvariable=self.azure_deployment_var, width=60)
-        self.azure_deployment_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
         
-        azure_apiversion_frame = ttk.Frame(settings_frame)
-        azure_apiversion_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(azure_apiversion_frame, text="Azure API Version:", width=20).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.azure_api_version_entry = ttk.Entry(azure_apiversion_frame, textvariable=self.azure_api_version_var, width=60)
-        self.azure_api_version_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
 
         # --- Configurações de Download de Resumos ---
         ttk.Label(settings_frame, text="--- Configurações de Download de Resumos ---", 
@@ -717,10 +686,7 @@ class SmartRecruiterGUI:
     def load_settings_to_ui(self):
         """✅ CORRIGIDO: Carregar todas as configurações incluindo scroll"""
         self.tesseract_path_var.set(self.config_manager.get_setting("tesseract_path", ""))
-        self.azure_endpoint_var.set(self.config_manager.get_setting("azure_endpoint", ""))
-        self.azure_api_key_var.set(self.config_manager.get_setting("azure_api_key", ""))
-        self.azure_deployment_var.set(self.config_manager.get_setting("azure_deployment", ""))
-        self.azure_api_version_var.set(self.config_manager.get_setting("azure_api_version", "2024-05-01-preview"))
+        
 
         # Carregar configurações de download
         default_download_dir = os.path.join(os.getcwd(), "downloaded_resumes")
@@ -817,10 +783,7 @@ class SmartRecruiterGUI:
                 self.log("AVISO: Nenhum caminho configurado e Tesseract não encontrado no PATH.")
 
         # Salvar outras configurações
-        self.config_manager.set_setting("azure_endpoint", self.azure_endpoint_var.get())
-        self.config_manager.set_setting("azure_api_key", self.azure_api_key_var.get())
-        self.config_manager.set_setting("azure_deployment", self.azure_deployment_var.get())
-        self.config_manager.set_setting("azure_api_version", self.azure_api_version_var.get())
+        
 
         # Salvar configurações de download
         self.config_manager.set_setting("resume_download_directory", self.resume_download_dir_var.get())
