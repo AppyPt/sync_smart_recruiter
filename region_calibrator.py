@@ -79,7 +79,8 @@ class RegionCalibrator:
             "Célula de Candidato (com círculo de perfil)", # Instrução mais clara
             "Nome (Relativo ao Círculo)",  
             "Perfil (Relativo ao Círculo)",
-            "Área de Busca do 'Latest Resume' (Página do Perfil)" # NOVA OPÇÃO 
+            "Data (Relativo ao Círculo)", # <--- NOVA OPÇÃO AQUI
+            "Área de Busca do 'Latest Resume' (Página do Perfil)" 
         ]
         self.region_list = ttk.Combobox(control_frame, values=self.region_list_values, state="readonly")
         self.region_list.pack(fill=tk.X, pady=5)
@@ -121,8 +122,9 @@ class RegionCalibrator:
             ),
             "Célula de Candidato (com círculo de perfil)": "Desenhe um retângulo em volta de UM candidato completo que contenha um círculo de perfil visível. O sistema tentará encontrar este círculo.",
             "Nome (Relativo ao Círculo)": "IMPORTANTE: Primeiro calibre 'Célula de Candidato'. Depois, desenhe um retângulo APENAS na área do NOME. A sua posição será guardada em relação ao círculo de perfil da célula de referência.",
-            "Perfil (Relativo ao Círculo)": "IMPORTANTE: Primeiro calibre 'Célula de Candidato'. Depois, desenhe um retângulo APENAS na área do PERFIL/CARGO. A sua posição será guardada em relação ao círculo de perfil da célula de referência.",
-            "Área de Busca do 'Latest Resume' (Página do Perfil)": "NA PÁGINA DE PERFIL DE UM CANDIDATO, desenhe um retângulo na área onde o link 'Latest Resume' (ou similar) provavelmente aparecerá. O OCR tentará encontrá-lo dentro desta área." # NOVA INSTRUÇÃO
+"Perfil (Relativo ao Círculo)": "IMPORTANTE: Primeiro calibre 'Célula de Candidato'. Depois, desenhe um retângulo APENAS na área do PERFIL/CARGO. A sua posição será guardada em relação ao círculo de perfil da célula de referência.",
+"Data (Relativo ao Círculo)": "IMPORTANTE: Desenhe um retângulo à volta da data (ex: 'Added to system: Apr 24, 2026'). A sua posição será guardada em relação ao círculo.", # <--- NOVA INSTRUÇÃO
+"Área de Busca do 'Latest Resume' (Página do Perfil)": "NA PÁGINA DE PERFIL DE UM CANDIDATO, desenhe um retângulo na área onde o link 'Latest Resume' (ou similar) provavelmente aparecerá. O OCR tentará encontrá-lo dentro desta área."
         }
         self.instruction_label.config(
             text=instructions.get(selected, "Selecione uma região para ver as instruções."),
@@ -378,6 +380,7 @@ class RegionCalibrator:
             "Célula de Candidato (com círculo de perfil)": "red",
             "Nome (Relativo ao Círculo)": "darkgreen", 
             "Perfil (Relativo ao Círculo)": "purple",
+            "Data (Relativo ao Círculo)": "teal", # <--- NOVA COR
             "Área de Busca do 'Latest Resume' (Página do Perfil)": "orange"
             # Adicione mais cores se tiver mais tipos de regiões que não são de offset
         }

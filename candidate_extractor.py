@@ -25,21 +25,23 @@ class CandidateExtractor:
         return (x, y, w, h)
 
     def extract_name_and_profile_from_cell_image(self, 
-                                            cell_image, 
-                                            name_sub_region_coords_relative_to_cell, 
-                                            profile_sub_region_coords_relative_to_cell):
+                                                cell_image, 
+                                                name_sub_region_coords_relative_to_cell, 
+                                                profile_sub_region_coords_relative_to_cell,
+                                                date_sub_region_coords_relative_to_cell=None): # <--- NOVO ARGUMENTO
         """
-        Extrai nome e perfil de uma célula de candidato usando sub-regiões calibradas.
+        Extrai nome, perfil e data de uma célula de candidato usando sub-regiões calibradas.
         
         Args:
             cell_image: Imagem PIL da célula completa do candidato
             name_sub_region_coords_relative_to_cell: Coordenadas da sub-região do nome
             profile_sub_region_coords_relative_to_cell: Coordenadas da sub-região do perfil
-        
+            date_sub_region_coords_relative_to_cell: Coordenadas da sub-região da data (opcional)
+            
         Returns:
-            dict: Dicionário com 'name' e 'profile' ou None se não for possível extrair
+            dict: Dicionário com 'name', 'profile' e 'date' ou None se não for possível extrair
         """
-        candidate_data = {"name": "", "profile": ""}
+        candidate_data = {"name": "", "profile": "", "date": ""} # <--- ADICIONADO "date"
         extracted_something = False
         
         # Obter dimensões da célula para validação
@@ -160,6 +162,23 @@ class CandidateExtractor:
                     print(f"DEBUG EXTRACT: Perfil (fallback da célula inteira): '{candidate_data['profile']}'")
             except Exception as e:
                 print(f"ERRO no fallback do perfil: {e}")
+
+        # --- Extração da Data ---
+        if date_sub_region_coords_relative_to_cell:
+            try:
+                region = self._clip_region_to_cell(date_sub_region_coords_relative_to_cell, cell_w, cell_h)
+                
+                date_text_raw = self.image_processor.extract_text(
+                    cell_image, 
+                    region_in_image_to_ocr=region
+                )
+                
+                candidate_data["date"] = self._clean_text(date_text_raw)
+                if candidate_data["date"]:
+                    extracted_something = True
+                    print(f"DEBUG EXTRACT: Data extraída: '{candidate_data['date']}'")
+            except Exception as e:
+                print(f"ERRO ao extrair data da sub-região: {e}")
 
         # Resultado final
         if extracted_something and candidate_data.get("name", "").strip():
