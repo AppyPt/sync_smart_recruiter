@@ -47,6 +47,12 @@
             "top": -8,
             "width": 268,
             "height": 25
+        },
+        "Data (Relativo ao C\u00edrculo)": {
+            "left": 768,
+            "top": 472,
+            "width": 264,
+            "height": 28
         }
     },
     "anchors": {},
