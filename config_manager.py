@@ -71,8 +71,9 @@ class ConfigManager:
         self.save_config()
 
     def reset_calibrations(self):
-        """Reset regions and anchors to empty dictionaries."""
+        """Reset regions, anchors, and profile circle to empty/None."""
         self.config["regions"] = {}
         self.config["anchors"] = {}
+        self.config["reference_profile_circle_center"] = None  # <--- ADICIONA ESTA LINHA!
         self.save_config()
         print("Calibrações foram redefinidas para o estado inicial.")

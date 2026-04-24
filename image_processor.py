@@ -638,6 +638,9 @@ class ImageProcessor:
             
             print(f"IP: {len(detected_circles_info) - len(filtered_circles)} círculos removidos por proximidade às bordas.")
             detected_circles_info = filtered_circles
+            
+            # Ordenar os círculos de cima para baixo (pelo eixo Y)
+            detected_circles_info.sort(key=lambda c: c['center_y_abs'])
                 
             if self.debug and debug_img_circles is not None:
                 try:
