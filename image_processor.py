@@ -641,6 +641,24 @@ class ImageProcessor:
             
             # Ordenar os círculos de cima para baixo (pelo eixo Y)
             detected_circles_info.sort(key=lambda c: c['center_y_abs'])
+            
+            # ---> NOVA TÉCNICA: Filtro de Eixo Vertical (Rejeitar Alucinações) <---
+            if detected_circles_info:
+                import statistics
+                # Extrair todos os eixos X
+                x_coords = [c['center_x_abs'] for c in detected_circles_info]
+                # A mediana ignora os outliers (círculos falsos) e encontra a coluna real
+                median_x = statistics.median(x_coords)
+                
+                aligned_circles = []
+                for c in detected_circles_info:
+                    # Só aceita círculos que estejam a +/- 15 pixeis da coluna central
+                    if abs(c['center_x_abs'] - median_x) <= 15:
+                        aligned_circles.append(c)
+                    else:
+                        print(f"IP: Círculo FALSO rejeitado em ({c['center_x_abs']}, {c['center_y_abs']}) - Fora do eixo X.")
+                
+                detected_circles_info = aligned_circles
                 
             if self.debug and debug_img_circles is not None:
                 try:
