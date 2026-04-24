@@ -205,7 +205,6 @@ class SmartRecruiterBot:
         SCROLL_STABILIZATION_DELAY = 0.5
         
         # ✅ ALTERAÇÃO 4: Tracking de posições Y para evitar duplicados
-        processed_cell_y_positions = set()
         
         try:
             # Get list area coordinates
@@ -297,17 +296,6 @@ class SmartRecruiterBot:
 
                 for i, (cell_region_in_list_image, circle_info_in_list_image) in enumerate(cells_with_circles):
                     x_cell, y_cell, w_cell, h_cell = cell_region_in_list_image
-                    
-                    # ✅ ALTERAÇÃO 4: Verificação de posição Y para evitar duplicados
-                    cell_y_absolute = cumulative_scroll_pixels + y_cell
-                    is_duplicate_position = any(
-                        abs(cell_y_absolute - prev_y) < 30
-                        for prev_y in processed_cell_y_positions
-                    )
-                    
-                    if is_duplicate_position:
-                        self._log_to_gui(f"   ⏭️ Célula em Y≈{cell_y_absolute} já processada, ignorando")
-                        continue
 
                     try:
                         individual_cell_image_pil = current_list_image_pil.crop((
@@ -336,7 +324,6 @@ class SmartRecruiterBot:
                                     }
                                     all_unique_candidates_data.append(final_candidate_entry)
                                     processed_candidate_names.add(candidate_name)
-                                    processed_cell_y_positions.add(cell_y_absolute)
                                     new_candidates_found_this_iteration += 1
                                     
                                     # ✅ ALTERAÇÃO 5: Log detalhado de sucesso
