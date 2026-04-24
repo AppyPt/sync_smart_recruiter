@@ -378,15 +378,20 @@ class SmartRecruiterBot:
                 scroll_pixels = max(MIN_SCROLL_PIXELS, scroll_pixels)
                 
                 # Execute scroll
-                scroll_amount = -scroll_pixels
-                self._log_to_gui(f"📜 Scroll: {scroll_pixels}px")
+                # Execute scroll
+                # No Linux, converte pixeis para ticks da roda do rato (assumindo ~50px por tick)
+                ticks_de_scroll = int(scroll_pixels / 50)
+                scroll_amount = -max(1, ticks_de_scroll) # Garante que faz pelo menos 1 click para baixo
+                
+                self._log_to_gui(f"📜 Scroll: Calculado {scroll_pixels}px -> Executando {scroll_amount} ticks do rato")
                 
                 pyautogui.moveTo(scroll_point_x, scroll_point_y, duration=0.1)
                 time.sleep(0.2)
                 
                 try:
                     pyautogui.scroll(scroll_amount)
-                    cumulative_scroll_pixels += scroll_pixels  # Atualizar posição acumulada
+                    # Mantemos o acumulador de pixeis baseado no que o rato "teoricamente" desceu
+                    cumulative_scroll_pixels += (abs(scroll_amount) * 50) 
                 except Exception as e_scroll:
                     self._log_to_gui(f"ERRO BOT ao executar scroll: {e_scroll}")
                 
@@ -777,7 +782,9 @@ class SmartRecruiterBot:
                 scroll_point_x_abs = list_area_coords_on_screen["left"] + list_area_coords_on_screen["width"] // 2
                 scroll_point_y_abs = list_area_coords_on_screen["top"] + list_area_coords_on_screen["height"] // 2
                 scroll_amount_pixels = int(list_area_coords_on_screen["height"] * 0.8)
-                scroll_pyautogui_val = -max(50, scroll_amount_pixels) 
+                # No Linux, converte pixeis para ticks da roda do rato (assumindo ~50px por tick)
+                ticks_de_scroll = int(scroll_amount_pixels / 50)
+                scroll_pyautogui_val = -max(1, ticks_de_scroll)  # Garante pelo menos 1 tick para baixo
                 
                 pyautogui.moveTo(scroll_point_x_abs, scroll_point_y_abs, duration=0.1)
                 time.sleep(0.2)
