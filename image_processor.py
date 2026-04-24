@@ -562,8 +562,8 @@ class ImageProcessor:
                                                 max_circle_radius=40,
                                                 hough_dp=1.2,
                                                 hough_min_dist_ratio=0.2,
-                                                hough_param1=60,
-                                                hough_param2=35,
+                                                hough_param1=30,  # <-- BAIXAMOS de 60 para 30 (Vê melhor cores claras/pastel)
+                                                hough_param2=18,  # <-- BAIXAMOS de 35 para 18 (Aceita círculos imperfeitos/com fotos)
                                                 circle_filter_max_x_ratio=0.25,
                                                 cell_y_offset_from_circle_center=-45,
                                                 min_cell_height=50):
