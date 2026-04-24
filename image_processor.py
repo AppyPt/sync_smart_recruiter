@@ -686,7 +686,9 @@ class ImageProcessor:
                 cell_x = 0
                 cell_y = center_y + cell_y_offset_from_circle_center
                 cell_width = img_width
-                cell_height = max(min_cell_height, int(radius * 2.5))
+                
+                # Aumentamos a altura da célula para não cortar a Data (que está mais abaixo)
+                cell_height = max(160, int(radius * 6.0))
 
                 # Create cell region tuple
                 cell_region = (cell_x, cell_y, cell_width, cell_height)
