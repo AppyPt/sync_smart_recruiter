@@ -366,8 +366,10 @@ class SmartRecruiterBot:
                 
                 # Execute scroll
                 # Execute scroll
-                # No Linux, converte pixeis para ticks da roda do rato (assumindo ~50px por tick)
-                ticks_de_scroll = int(scroll_pixels / 50)
+                # No Linux/Chrome, a aceleração do scroll é muito agressiva.
+                # Cada "tick" roda cerca de 130 pixeis.
+                PIXELS_POR_TICK = 130
+                ticks_de_scroll = int(scroll_pixels / PIXELS_POR_TICK)
                 scroll_amount = -max(1, ticks_de_scroll) # Garante que faz pelo menos 1 click para baixo
                 
                 self._log_to_gui(f"📜 Scroll: Calculado {scroll_pixels}px -> Executando {scroll_amount} ticks do rato")
@@ -377,8 +379,7 @@ class SmartRecruiterBot:
                 
                 try:
                     pyautogui.scroll(scroll_amount)
-                    # Mantemos o acumulador de pixeis baseado no que o rato "teoricamente" desceu
-                    cumulative_scroll_pixels += (abs(scroll_amount) * 50) 
+                    cumulative_scroll_pixels += (abs(scroll_amount) * PIXELS_POR_TICK)
                 except Exception as e_scroll:
                     self._log_to_gui(f"ERRO BOT ao executar scroll: {e_scroll}")
                 
