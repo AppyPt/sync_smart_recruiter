@@ -1,6 +1,5 @@
 # candidate_extractor.py
 import re 
-import pandas as pd
 from tkinter import messagebox
 import os
 
@@ -170,28 +169,4 @@ class CandidateExtractor:
             print("DEBUG EXTRACT: Nenhum dado válido extraído")
             return None
 
-    def save_to_xlsx(self, filename="candidates.xlsx"):
-        if not self.candidates:
-            print("Nenhum candidato para salvar em XLSX.")
-            return None
-        try:
-            df = pd.DataFrame(self.candidates)
-            if 'name' not in df.columns:
-                df['name'] = ""
-            if 'profile' not in df.columns:
-                df['profile'] = ""
-            
-            df_to_save = df[['name', 'profile']]
-            df_to_save.to_excel(filename, index=False, engine='openpyxl')
-            print(f"Dados salvos com sucesso em {filename}")
-            return filename
-        except ImportError:
-            print("ERRO: A biblioteca 'openpyxl' é necessária para salvar em XLSX. Instale com 'pip install openpyxl'")
-            # Poderia levantar um erro aqui ou retornar None para a GUI tratar
-            messagebox.showerror("Dependência em Falta", "A biblioteca 'openpyxl' é necessária para salvar em XLSX.\nPor favor, instale-a com: pip install openpyxl")
-            return None
-        except Exception as e:
-            print(f"Erro ao salvar arquivo XLSX: {e}")
-            messagebox.showerror("Erro ao Salvar XLSX", f"Ocorreu um erro ao salvar o arquivo XLSX:\n{e}")
-            return None
 
