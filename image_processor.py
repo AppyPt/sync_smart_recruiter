@@ -475,11 +475,12 @@ class ImageProcessor:
                         max_x = max(word['left'] + word['width'] for word in found_words)
                         max_y = max(word['top'] + word['height'] for word in found_words)
                         
+                        # Reverter o zoom_factor para obtermos as coordenadas reais no ecrã
                         best_result = {
-                            'left': min_x,
-                            'top': min_y,
-                            'width': max_x - min_x,
-                            'height': max_y - min_y,
+                            'left': int(min_x / self.zoom_factor),
+                            'top': int(min_y / self.zoom_factor),
+                            'width': int((max_x - min_x) / self.zoom_factor),
+                            'height': int((max_y - min_y) / self.zoom_factor),
                             'conf': avg_conf,
                             'psm_used': psm_config
                         }

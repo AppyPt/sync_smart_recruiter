@@ -512,14 +512,42 @@ class SmartRecruiterBot:
             text_box_in_region_image = self.image_processor.get_text_bounding_box(region_image_pil, text_to_find)
             
             if text_box_in_region_image:
-                center_x_rel_region = text_box_in_region_image['left'] + text_box_in_region_image['width'] // 2
-                center_y_rel_region = text_box_in_region_image['top'] + text_box_in_region_image['height'] // 2
+                click_x_rel_region = text_box_in_region_image['left'] + int(text_box_in_region_image['width'] * 0.20)
+                click_y_rel_region = text_box_in_region_image['top'] + (text_box_in_region_image['height'] // 2)
 
                 coords_on_screen = (
-                    search_area_coords_on_screen['left'] + center_x_rel_region,
-                    search_area_coords_on_screen['top'] + center_y_rel_region
+                    search_area_coords_on_screen['left'] + click_x_rel_region,
+                    search_area_coords_on_screen['top'] + click_y_rel_region
                 )
-                self._log_to_gui(f"Texto '{text_to_find}' encontrado. Coordenadas na tela: {coords_on_screen}")
+                
+                # --- SUPER DEBUGGING ---
+                self._log_to_gui("--- DEBUG MATEMÁTICA DO CLIQUE ---")
+                self._log_to_gui(f" 1. Ponto Inicial da Região Ecrã : X={search_area_coords_on_screen['left']}, Y={search_area_coords_on_screen['top']}")
+                self._log_to_gui(f" 2. Caixa do OCR (Na Região)    : left={text_box_in_region_image['left']}, top={text_box_in_region_image['top']}, w={text_box_in_region_image['width']}, h={text_box_in_region_image['height']}")
+                self._log_to_gui(f" 3. Ponto de Clique (Na Região) : x={click_x_rel_region}, y={click_y_rel_region}")
+                self._log_to_gui(f" 4. Ponto Final Absoluto no Ecrã: X={coords_on_screen[0]}, Y={coords_on_screen[1]}")
+                
+                # Desenhar uma mira na imagem para vermos onde o bot ACHA que vai clicar
+                if hasattr(self.image_processor, 'debug') and self.image_processor.debug:
+                    import cv2
+                    import numpy as np
+                    try:
+                        debug_img_cv = cv2.cvtColor(np.array(region_image_pil), cv2.COLOR_RGB2BGR)
+                        cv2.rectangle(debug_img_cv, 
+                                     (text_box_in_region_image['left'], text_box_in_region_image['top']), 
+                                     (text_box_in_region_image['left'] + text_box_in_region_image['width'], 
+                                      text_box_in_region_image['top'] + text_box_in_region_image['height']), 
+                                     (0, 255, 0), 2)
+                        # Desenha uma MIRA VERMELHA no local exato do clique
+                        cv2.drawMarker(debug_img_cv, (click_x_rel_region, click_y_rel_region), (0, 0, 255), markerType=cv2.MARKER_CROSS, markerSize=20, thickness=2)
+                        
+                        crosshair_path = os.path.join(DEBUG_OUTPUT_DIR, f"debug_crosshair_{time.strftime('%H%M%S')}.png")
+                        cv2.imwrite(crosshair_path, debug_img_cv)
+                        self._log_to_gui(f" MIRA VISUAL: A imagem com o alvo vermelho foi gravada em: {crosshair_path}")
+                    except Exception as e_cross:
+                        self._log_to_gui(f" Erro ao desenhar a mira de debug: {e_cross}")
+                self._log_to_gui("----------------------------------")
+                
                 return coords_on_screen
             else:
                 self._log_to_gui(f"Texto '{text_to_find}' NÃO encontrado na região '{calibrated_region_name}'.")
@@ -674,7 +702,12 @@ class SmartRecruiterBot:
                 time.sleep(0.5)
 
         if link_coords:
-            self._log_to_gui(f"Clicando com botão direito em '{text_found}' nas coordenadas {link_coords}")
+            self._log_to_gui(f"Mapeando o rato lentamente para o alvo {link_coords} para confirmação visual...")
+            # Move o rato durante 1.5 segundos para a posição para que os teus olhos possam acompanhar
+            pyautogui.moveTo(link_coords[0], link_coords[1], duration=1.5)
+            time.sleep(0.5) # Dá meio segundo para veres bem onde o rato parou
+            
+            self._log_to_gui(f"Clicando com botão direito em '{text_found}'...")
             pyautogui.rightClick(link_coords[0], link_coords[1])
             time.sleep(0.8)
 

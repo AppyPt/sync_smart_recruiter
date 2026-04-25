@@ -76,7 +76,7 @@
     "anchors": {},
     "reference_profile_circle_center": null,
     "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-    "resume_download_directory": "C:\\Users\\paulo.correia.montei\\Projects\\find-best\\downloaded_resumes",
+    "resume_download_directory": "/tmp/cvs/",
     "azure_endpoint": "https://deliveryaihub7596701848.openai.azure.com/openai/deployments/o3-mini/chat/completions?api-version=2025-01-01-preview",
     "azure_api_key": "COLOQUE AQUI A CHAVE DA SUA API AZURE OPENAI",
     "azure_deployment": "o3-mini",
