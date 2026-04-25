@@ -354,8 +354,52 @@ class SmartRecruiterBot:
                                     processed_candidate_names.add(candidate_name)
                                     new_candidates_found_this_iteration += 1
                                     
-                                    # ✅ ALTERAÇÃO 5: Log detalhado de sucesso
                                     self._log_to_gui(f"   ✓ Célula #{i+1}: {candidate_name}")
+
+                                    # =================================================================
+                                    # INÍCIO DA LÓGICA DE DOWNLOAD INLINE DO CV
+                                    # =================================================================
+                                    name_click_center = cell_processing_result.get('name_precise_click_center_rel_to_cell')
+                                    if name_click_center:
+                                        # Calcula a coordenada X e Y absoluta no ecrã para o clique
+                                        name_link_x_on_screen = list_area_coords["left"] + x_cell + name_click_center[0]
+                                        name_link_y_on_screen = list_area_coords["top"] + y_cell + name_click_center[1]
+
+                                        self._log_to_gui(f"   📥 Iniciando extração do CV para: {candidate_name}")
+                                        try:
+                                            # Shift+Click abre o link numa NOVA JANELA no Chrome
+                                            pyautogui.keyDown('shift')
+                                            pyautogui.click(name_link_x_on_screen, name_link_y_on_screen)
+                                            pyautogui.keyUp('shift')
+
+                                            # Aguarda a página do perfil carregar
+                                            delay_segundos = self.config.get_setting("page_load_delay_sec", 7)
+                                            self._log_to_gui(f"   Aguardando {delay_segundos}s pelo carregamento do perfil...")
+                                            time.sleep(delay_segundos)
+                                            
+                                            # Chama a função que já tens pronta para baixar o CV e fechar a janela
+                                            sucesso_cv = self.process_candidate_profile_page(
+                                                candidate_name, 
+                                                final_candidate_entry["profile"]
+                                            )
+                                            
+                                            if sucesso_cv:
+                                                self._log_to_gui(f"   ✅ CV de {candidate_name} guardado com sucesso!")
+                                                final_candidate_entry["cv_downloaded"] = True
+                                            else:
+                                                self._log_to_gui(f"   ⚠️ Não foi possível baixar o CV de {candidate_name}.")
+                                                final_candidate_entry["cv_downloaded"] = False
+                                                
+                                        except Exception as e_click:
+                                            self._log_to_gui(f"   ❌ ERRO ao tentar abrir o perfil de {candidate_name}: {e_click}")
+                                            pyautogui.keyUp('shift') # Garantir que o shift não fica preso
+                                            final_candidate_entry["cv_downloaded"] = False
+                                    else:
+                                        self._log_to_gui(f"   ⚠️ Sem coordenadas precisas para clicar em {candidate_name}. CV ignorado.")
+                                        final_candidate_entry["cv_downloaded"] = False
+                                    # =================================================================
+                                    # FIM DA LÓGICA DE DOWNLOAD INLINE DO CV
+                                    # =================================================================
 
                     except Exception as e_cell:
                         self._log_to_gui(f"ERRO BOT ao processar célula #{i+1}: {e_cell}")
