@@ -62,6 +62,7 @@ class SmartRecruiterBot:
         self.scroll_interval = 2.0 
         self.log_gui_callback = None
         self.gui_log_callback_capture = None
+        self.stop_requested = False  # <--- NOVA LINHA: O interruptor de paragem
 
     def _log_to_gui(self, message):
         if self.log_gui_callback: 
@@ -276,6 +277,10 @@ class SmartRecruiterBot:
             cumulative_scroll_pixels = 0  # Para calcular posição Y absoluta
 
             while iteration < self.max_scroll_iterations:
+                # ---> NOVO TRAVÃO 1
+                if self.stop_requested:
+                    self._log_to_gui("🛑 Captura interrompida pelo utilizador.")
+                    break
                 iteration += 1
                 
                 # ✅ ALTERAÇÃO 5: Logging melhorado
@@ -321,6 +326,9 @@ class SmartRecruiterBot:
                 new_candidates_found_this_iteration = 0
 
                 for i, (cell_region_in_list_image, circle_info_in_list_image) in enumerate(cells_with_circles):
+                    # ---> NOVO TRAVÃO 2
+                    if self.stop_requested:
+                        break
                     x_cell, y_cell, w_cell, h_cell = cell_region_in_list_image
 
                     try:
@@ -372,10 +380,18 @@ class SmartRecruiterBot:
                                             pyautogui.click(name_link_x_on_screen, name_link_y_on_screen)
                                             pyautogui.keyUp('shift')
 
-                                            # Aguarda a página do perfil carregar
+                                            # Aguarda a página do perfil carregar (sleep seguro/interrompível)
                                             delay_segundos = self.config.get_setting("page_load_delay_sec", 7)
                                             self._log_to_gui(f"   Aguardando {delay_segundos}s pelo carregamento do perfil...")
-                                            time.sleep(delay_segundos)
+                                            
+                                            for _ in range(int(delay_segundos * 10)):
+                                                if self.stop_requested:
+                                                    self._log_to_gui("   🛑 Cancelado enquanto aguardava a página abrir!")
+                                                    break
+                                                time.sleep(0.1)
+                                                
+                                            if self.stop_requested:
+                                                continue # Salta este candidato e sai do ciclo
                                             
                                             # Chama a função que já tens pronta para baixar o CV e fechar a janela
                                             sucesso_cv = self.process_candidate_profile_page(

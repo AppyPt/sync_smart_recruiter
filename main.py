@@ -152,6 +152,10 @@ class SmartRecruiterGUI:
         self.capture_button = ttk.Button(buttons_frame, text="Iniciar Captura", command=self.start_capture)
         self.capture_button.pack(side=tk.LEFT, padx=(0, 5))
         
+        # ---> NOVO BOTÃO AQUI:
+        self.stop_button = ttk.Button(buttons_frame, text="Parar Captura", command=self.stop_capture, state=tk.DISABLED)
+        self.stop_button.pack(side=tk.LEFT, padx=5)
+        
         self.reset_button = ttk.Button(
             buttons_frame, 
             text="Redefinir Calibrações",
@@ -423,6 +427,43 @@ class SmartRecruiterGUI:
         self.status_var.set(message)
         self.root.update_idletasks()
     
+    def show_panic_window(self):
+        """Cria um botão de pânico flutuante e sempre no topo."""
+        if hasattr(self, 'panic_win') and self.panic_win and self.panic_win.winfo_exists():
+            return
+
+        self.panic_win = tk.Toplevel(self.root)
+        self.panic_win.title("Pânico")
+        self.panic_win.geometry("160x50+10+10") # Canto superior esquerdo
+        self.panic_win.attributes("-topmost", True) # Fica por cima do Chrome
+        self.panic_win.overrideredirect(True) # Remove barra superior
+
+        frame = tk.Frame(self.panic_win, highlightbackground="darkred", highlightthickness=3)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        self.panic_btn = tk.Button(
+            frame, text="🛑 PARAR ROBÔ", bg="red", fg="white", 
+            font=("Arial", 10, "bold"), command=self.stop_capture
+        )
+        self.panic_btn.pack(fill=tk.BOTH, expand=True)
+
+    def hide_panic_window(self):
+        """Esconde e destrói o botão flutuante de pânico."""
+        if hasattr(self, 'panic_win') and self.panic_win and self.panic_win.winfo_exists():
+            self.panic_win.destroy()
+            self.panic_win = None
+
+    def stop_capture(self):
+        """Sinaliza a thread do bot para parar a execução."""
+        if self.running:
+            self.bot.stop_requested = True
+            self.log("🛑 SINAL DE PARAGEM ENVIADO! O robô vai parar no próximo ciclo...")
+            self.update_status("A parar...")
+            self.stop_button.config(state=tk.DISABLED)
+            
+            if hasattr(self, 'panic_btn') and self.panic_btn.winfo_exists():
+                self.panic_btn.config(text="A PARAR...", bg="orange", state=tk.DISABLED)
+
     def start_capture(self):
         if self.running:
             messagebox.showinfo("Em execução", "Já existe uma captura em andamento.")
@@ -449,6 +490,10 @@ class SmartRecruiterGUI:
         self.config_manager.set_setting("etl_end_date", end_date)
         
         self.running = True
+        self.bot.stop_requested = False # <--- GARANTIR QUE A VARIÁVEL ESTÁ LIMPA
+        self.update_status("Capturando candidatos...")
+        self.capture_button.config(text="Capturando...", state=tk.DISABLED)
+        self.stop_button.config(state=tk.NORMAL) # <--- ATIVAR O BOTÃO DE PARAR NORMAL
         self.update_status("Capturando candidatos...")
         self.capture_button.config(text="Capturando...", state=tk.DISABLED)
         
@@ -475,6 +520,9 @@ class SmartRecruiterGUI:
             time.sleep(1); self.update_status("Capturando em 2..."); self.root.update_idletasks()
             time.sleep(1); self.update_status("Capturando em 1..."); self.root.update_idletasks()
             
+            # ---> MOSTRAR O BOTÃO DE PÂNICO NO ECRÃ
+            self.root.after(0, self.show_panic_window)
+            
             self.candidate_extractor.candidates = []
             self.update_results_display()
 
@@ -496,6 +544,8 @@ class SmartRecruiterGUI:
         finally:
             self.running = False
             self.root.after(0, lambda: self.capture_button.config(text="Iniciar Captura", state=tk.NORMAL))
+            self.root.after(0, lambda: self.stop_button.config(state=tk.DISABLED)) # <--- DESATIVA O BOTÃO NORMAL
+            self.root.after(0, self.hide_panic_window) # <--- DESTRÓI A JANELA DE PÂNICO
             self.root.after(0, lambda: self.update_status("Pronto"))
             self.root.after(0, lambda: self.update_progress(100))
 
