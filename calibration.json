@@ -1,58 +1,70 @@
 {
     "regions": {
         "Lista de Candidatos": {
-            "left": 641,
-            "top": 370,
-            "width": 936,
-            "height": 712
+            "left": 642,
+            "top": 368,
+            "width": 932,
+            "height": 708
         },
         "C\u00e9lula de Candidato (com c\u00edrculo de perfil)": {
             "left": 641,
-            "top": 682,
-            "width": 933,
-            "height": 159
+            "top": 678,
+            "width": 932,
+            "height": 162
         },
         "Nome (Relativo ao C\u00edrculo)": {
             "left": 778,
-            "top": 712,
-            "width": 246,
-            "height": 22
+            "top": 709,
+            "width": 252,
+            "height": 29
         },
         "Nome (Relativo ao C\u00edrculo)_offset_from_circle": {
             "offset_x": 56,
-            "offset_y": -35,
-            "width": 246,
-            "height": 22
+            "offset_y": -38,
+            "width": 252,
+            "height": 29
         },
         "Nome (Dentro da C\u00e9lula)_rel_to_cell": {
             "left": 56,
-            "top": -35,
-            "width": 246,
-            "height": 22
+            "top": -38,
+            "width": 252,
+            "height": 29
         },
         "Perfil (Relativo ao C\u00edrculo)": {
-            "left": 774,
+            "left": 775,
             "top": 735,
-            "width": 269,
+            "width": 261,
             "height": 29
         },
         "Perfil (Relativo ao C\u00edrculo)_offset_from_circle": {
-            "offset_x": 52,
+            "offset_x": 53,
             "offset_y": -12,
-            "width": 269,
+            "width": 261,
             "height": 29
         },
         "Perfil (Dentro da C\u00e9lula)_rel_to_cell": {
-            "left": 52,
+            "left": 53,
             "top": -12,
-            "width": 269,
+            "width": 261,
             "height": 29
         },
         "Data (Relativo ao C\u00edrculo)": {
-            "left": 776,
-            "top": 787,
-            "width": 268,
-            "height": 22
+            "left": 771,
+            "top": 780,
+            "width": 264,
+            "height": 32
+        },
+        "Data (Relativo ao C\u00edrculo)_offset_from_circle": {
+            "offset_x": 49,
+            "offset_y": 33,
+            "width": 264,
+            "height": 32
+        },
+        "Data (Dentro da C\u00e9lula)_rel_to_cell": {
+            "left": 49,
+            "top": 33,
+            "width": 264,
+            "height": 32
         }
     },
     "anchors": {},

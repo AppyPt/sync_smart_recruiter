@@ -22,11 +22,24 @@ class ConfigManager:
             print(f"Ficheiro de configuração '{self.config_file}' não encontrado. Usando configuração padrão.")
             return {"regions": {}, "anchors": {}, "tesseract_path": "", "templates_path": ""}
 
-    def save_config(self): # Não precisa mais do argumento config
-        """Salva o estado atual de self.config no ficheiro."""
+    def save_config(self): 
+        """Salva o estado atual no ficheiro, preservando o que foi salvo pelo calibrador."""
         try:
+            # 1. Carrega os dados mais frescos do disco
+            current_file_data = {"regions": {}, "anchors": {}}
+            if os.path.exists(self.config_file):
+                with open(self.config_file, 'r') as f:
+                    current_file_data = json.load(f)
+            
+            # 2. Mescla a memória atual sobre os dados frescos
+            current_file_data.update(self.config)
+            
+            # 3. Salva a fusão de volta no disco
             with open(self.config_file, 'w') as f:
-                json.dump(self.config, f, indent=4)
+                json.dump(current_file_data, f, indent=4)
+                
+            # 4. Atualiza a memória
+            self.config = current_file_data
             print(f"Configuração salva em '{self.config_file}'.")
         except Exception as e:
             print(f"Erro ao salvar configuração em '{self.config_file}': {e}")

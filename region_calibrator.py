@@ -350,15 +350,20 @@ class RegionCalibrator:
     
     def save_calibration_data(self): 
         try:
-            # Converter para tipos Python nativos antes da serialização
-            data_to_save = {
-                "regions": self._convert_numpy_to_python(self.regions), 
-                "anchors": self._convert_numpy_to_python(self.anchors),
-                "reference_profile_circle_center": self._convert_numpy_to_python(self.reference_profile_circle_center)
-            }
+            # 1. Ler o que já existe no ficheiro para não apagar configurações globais
+            existing_data = {}
+            if os.path.exists('calibration.json'):
+                with open('calibration.json', 'r') as f:
+                    existing_data = json.load(f)
+
+            # 2. Atualizar apenas as chaves de calibração
+            existing_data["regions"] = self._convert_numpy_to_python(self.regions)
+            existing_data["anchors"] = self._convert_numpy_to_python(self.anchors)
+            existing_data["reference_profile_circle_center"] = self._convert_numpy_to_python(self.reference_profile_circle_center)
             
+            # 3. Salvar o ficheiro completo
             with open('calibration.json', 'w') as f:
-                json.dump(data_to_save, f, indent=4)
+                json.dump(existing_data, f, indent=4)
                 
             self.info_label.config(text="Calibração salva com sucesso em calibration.json!")
             messagebox.showinfo("Salvo", "Dados de calibração salvos.")
