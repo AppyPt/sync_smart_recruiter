@@ -1,58 +1,58 @@
 {
     "regions": {
         "Lista de Candidatos": {
-            "left": 642,
-            "top": 367,
-            "width": 929,
-            "height": 715
+            "left": 641,
+            "top": 370,
+            "width": 936,
+            "height": 712
         },
         "C\u00e9lula de Candidato (com c\u00edrculo de perfil)": {
-            "left": 640,
-            "top": 363,
-            "width": 931,
-            "height": 156
+            "left": 641,
+            "top": 682,
+            "width": 933,
+            "height": 159
         },
         "Nome (Relativo ao C\u00edrculo)": {
-            "left": 772,
-            "top": 397,
-            "width": 257,
-            "height": 28
+            "left": 778,
+            "top": 712,
+            "width": 246,
+            "height": 22
         },
         "Nome (Relativo ao C\u00edrculo)_offset_from_circle": {
-            "offset_x": 50,
-            "offset_y": -36,
-            "width": 257,
-            "height": 28
+            "offset_x": 56,
+            "offset_y": -35,
+            "width": 246,
+            "height": 22
         },
         "Nome (Dentro da C\u00e9lula)_rel_to_cell": {
-            "left": 50,
-            "top": -36,
-            "width": 257,
-            "height": 28
+            "left": 56,
+            "top": -35,
+            "width": 246,
+            "height": 22
         },
         "Perfil (Relativo ao C\u00edrculo)": {
-            "left": 768,
-            "top": 425,
-            "width": 268,
-            "height": 25
+            "left": 774,
+            "top": 735,
+            "width": 269,
+            "height": 29
         },
         "Perfil (Relativo ao C\u00edrculo)_offset_from_circle": {
-            "offset_x": 46,
-            "offset_y": -8,
-            "width": 268,
-            "height": 25
+            "offset_x": 52,
+            "offset_y": -12,
+            "width": 269,
+            "height": 29
         },
         "Perfil (Dentro da C\u00e9lula)_rel_to_cell": {
-            "left": 46,
-            "top": -8,
-            "width": 268,
-            "height": 25
+            "left": 52,
+            "top": -12,
+            "width": 269,
+            "height": 29
         },
         "Data (Relativo ao C\u00edrculo)": {
-            "left": 768,
-            "top": 472,
-            "width": 264,
-            "height": 28
+            "left": 776,
+            "top": 787,
+            "width": 268,
+            "height": 22
         }
     },
     "anchors": {},

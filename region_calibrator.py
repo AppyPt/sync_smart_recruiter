@@ -291,8 +291,8 @@ class RegionCalibrator:
                     self.info_label.config(text=f"'Célula de Candidato' definida. Círculo estimado, não detectado automaticamente.")
                     print(f"Círculo estimado: {self.reference_profile_circle_center}")
             
-            # Para Nome ou Perfil, calcular offsets relativos ao círculo
-            elif defined_region_name in ["Nome (Relativo ao Círculo)", "Perfil (Relativo ao Círculo)"]:
+            # Para Nome, Perfil ou Data, calcular offsets relativos ao círculo
+            elif defined_region_name in ["Nome (Relativo ao Círculo)", "Perfil (Relativo ao Círculo)", "Data (Relativo ao Círculo)"]:
                 if self.reference_profile_circle_center:
                     # Calcular offsets relativos ao centro do círculo
                     offset_x = int(abs_x1) - self.reference_profile_circle_center["x"]
