@@ -432,11 +432,22 @@ class ImageProcessor:
                             
                         conf = int(ocr_data['conf'][i])
                         
-                        # Verificar se esta palavra é parte da sequência alvo
-                        if (ocr_word.lower() in target_text or 
-                            any(w.lower() in target_text for w in ocr_word.split()) or
-                            any(ocr_word.lower() in t.lower() for t in target_text_sequence.split())):
+                        # Verificar se esta palavra é parte da sequência alvo com mais rigor
+                        ocr_clean = ocr_word.lower()
+                        target_words = target_text.split()
                         
+                        is_match = False
+                        # 1. Correspondência exata de palavra
+                        if ocr_clean in target_words:
+                            is_match = True
+                        # 2. Correspondência parcial (apenas se a palavra tiver pelo menos 4 letras, para evitar o "at" no "Latest")
+                        elif len(ocr_clean) >= 4 and ocr_clean in target_text:
+                            is_match = True
+                        # 3. Correspondência fundida (ex: "LatestResume" tudo junto)
+                        elif target_text.replace(" ", "") in ocr_clean:
+                            is_match = True
+                            
+                        if is_match:
                             found_words.append({
                                 'text': ocr_word,
                                 'left': int(ocr_data['left'][i]),
