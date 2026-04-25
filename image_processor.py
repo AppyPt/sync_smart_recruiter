@@ -437,14 +437,18 @@ class ImageProcessor:
                         target_words = target_text.split()
                         
                         is_match = False
+                        # Limpar pontuação e símbolos estúpidos que o OCR apanha
+                        import string
+                        ocr_super_clean = ocr_clean.translate(str.maketrans('', '', string.punctuation)).strip()
+                        
                         # 1. Correspondência exata de palavra
-                        if ocr_clean in target_words:
+                        if ocr_super_clean in target_words:
                             is_match = True
-                        # 2. Correspondência parcial (apenas se a palavra tiver pelo menos 4 letras, para evitar o "at" no "Latest")
-                        elif len(ocr_clean) >= 4 and ocr_clean in target_text:
+                        # 2. Correspondência parcial (apenas se a palavra tiver pelo menos 4 letras)
+                        elif len(ocr_super_clean) >= 4 and ocr_super_clean in target_text:
                             is_match = True
                         # 3. Correspondência fundida (ex: "LatestResume" tudo junto)
-                        elif target_text.replace(" ", "") in ocr_clean:
+                        elif target_text.replace(" ", "") in ocr_super_clean:
                             is_match = True
                             
                         if is_match:

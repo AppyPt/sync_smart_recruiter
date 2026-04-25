@@ -678,12 +678,10 @@ class SmartRecruiterBot:
             pyautogui.rightClick(link_coords[0], link_coords[1])
             time.sleep(0.8)
 
-            num_downs = self.config.get_setting("context_menu_save_as_option_index", 5)
-            if num_downs > 0:
-                self._log_to_gui(f"Navegando {num_downs} posições para baixo no menu...")
-                pyautogui.press('down', presses=num_downs, interval=0.15)
-            time.sleep(0.3)
-            pyautogui.press('enter')
+            # Abordagem blindada: Pressionar a letra de atalho do menu "Save link as" ('k')
+            self._log_to_gui("Enviando comando para Guardar Link (tecla 'k').")
+            pyautogui.press('k')  
+            time.sleep(2.0) # Dá tempo extra para a janela de Guardar aparecer e estabilizar
 
             success = self._handle_save_as_dialog(candidate_name, candidate_profile)
             

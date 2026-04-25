@@ -67,10 +67,10 @@
             "height": 32
         },
         "\u00c1rea de Busca do 'Latest Resume' (P\u00e1gina do Perfil)": {
-            "left": 326,
-            "top": 236,
-            "width": 853,
-            "height": 146
+            "left": 352,
+            "top": 309,
+            "width": 833,
+            "height": 100
         }
     },
     "anchors": {},
@@ -86,5 +86,6 @@
     "max_scroll_iterations": 2,
     "scroll_interval": 2.0,
     "etl_start_date": "",
-    "etl_end_date": ""
+    "etl_end_date": "",
+    "page_load_delay_sec": 7
 }
