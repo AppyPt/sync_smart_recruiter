@@ -410,10 +410,10 @@ class SmartRecruiterBot:
                                                 # ==========================================
                                                 # O MAGNÍFICO PIPELINE DE INJEÇÃO (ETL)
                                                 # ==========================================
-                                                download_dir = self.config.get_setting("resume_download_directory")
-                                                # Usamos uma busca simples do ficheiro pelo mapeamento para saber o caminho final
+                                                download_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
                                                 map_file = os.path.join(download_dir, "resume_map.json")
                                                 local_cv_path = None
+                                                
                                                 if os.path.exists(map_file):
                                                     import json
                                                     with open(map_file, 'r', encoding='utf-8') as f:
@@ -422,14 +422,27 @@ class SmartRecruiterBot:
                                                             if data.get("candidate_name") == candidate_name:
                                                                 local_cv_path = os.path.join(download_dir, filename)
                                                                 break
-
+                                                
+                                                # --- NOVO: ESPERAR PELO FICHEIRO NO DISCO ---
+                                                if local_cv_path:
+                                                    self._log_to_gui(f"   Aguardando que o ficheiro '{os.path.basename(local_cv_path)}' seja escrito no disco...")
+                                                    timeout_contador = 0
+                                                    while not os.path.exists(local_cv_path) and timeout_contador < 10:
+                                                        time.sleep(1) # Espera 1 segundo e verifica de novo
+                                                        timeout_contador += 1
+                                                        
+                                                    if not os.path.exists(local_cv_path):
+                                                        self._log_to_gui("   ⚠️ ERRO: O Chrome não gravou o ficheiro a tempo ou mudou a extensão!")
+                                                        local_cv_path = None # Cancela o upload do blob para não dar erro
+                                                # --------------------------------------------
+                                                
                                                 sucesso_etl, msg_etl = self.etl_pipeline.process_candidate(
                                                     candidate_info=final_candidate_entry, 
                                                     local_cv_path=local_cv_path
                                                 )
                                                 self._log_to_gui(f"   ☁️ ETL: {msg_etl}")
                                                 
-                                                # --- NOVO: APAGAR FICHEIRO LOCAL ---
+                                                # --- APAGAR FICHEIRO LOCAL ---
                                                 if local_cv_path and os.path.exists(local_cv_path):
                                                     try:
                                                         os.remove(local_cv_path)
