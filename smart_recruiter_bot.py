@@ -7,6 +7,7 @@ from PIL import Image
 import traceback
 import json
 import uuid
+from etl_pipeline import ETLPipeline
 
 import subprocess
 
@@ -271,6 +272,9 @@ class SmartRecruiterBot:
             self._log_to_gui("Lista posicionada no topo")
             time.sleep(SCROLL_STABILIZATION_DELAY)
 
+            # Inicializar a conduta de gravação na BD
+            self.etl_pipeline = ETLPipeline(self.config, log_callback=self._log_to_gui)
+
             # Main capture loop
             iteration = 0
             consecutive_iterations_without_new_candidates = 0
@@ -400,8 +404,31 @@ class SmartRecruiterBot:
                                             )
                                             
                                             if sucesso_cv:
-                                                self._log_to_gui(f"   ✅ CV de {candidate_name} guardado com sucesso!")
+                                                self._log_to_gui(f"   ✅ CV de {candidate_name} guardado localmente com sucesso!")
                                                 final_candidate_entry["cv_downloaded"] = True
+                                                
+                                                # ==========================================
+                                                # O MAGNÍFICO PIPELINE DE INJEÇÃO (ETL)
+                                                # ==========================================
+                                                download_dir = self.config.get_setting("resume_download_directory")
+                                                # Usamos uma busca simples do ficheiro pelo mapeamento para saber o caminho final
+                                                map_file = os.path.join(download_dir, "resume_map.json")
+                                                local_cv_path = None
+                                                if os.path.exists(map_file):
+                                                    import json
+                                                    with open(map_file, 'r', encoding='utf-8') as f:
+                                                        mapping_data = json.load(f)
+                                                        for filename, data in mapping_data.items():
+                                                            if data.get("candidate_name") == candidate_name:
+                                                                local_cv_path = os.path.join(download_dir, filename)
+                                                                break
+
+                                                sucesso_etl, msg_etl = self.etl_pipeline.process_candidate(
+                                                    candidate_info=final_candidate_entry, 
+                                                    local_cv_path=local_cv_path
+                                                )
+                                                self._log_to_gui(f"   ☁️ ETL: {msg_etl}")
+                                                # ==========================================
                                             else:
                                                 self._log_to_gui(f"   ⚠️ Não foi possível baixar o CV de {candidate_name}.")
                                                 final_candidate_entry["cv_downloaded"] = False

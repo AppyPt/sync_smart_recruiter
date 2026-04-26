@@ -57,6 +57,12 @@ class SmartRecruiterGUI:
         self.start_date_var = tk.StringVar()
         self.end_date_var = tk.StringVar()
 
+        # ---> NOVAS VARIÁVEIS DE STORAGE:
+        self.mongo_conn_str_var = tk.StringVar()
+        self.mongo_db_name_var = tk.StringVar(value="deliveryai_etl")
+        self.blob_conn_str_var = tk.StringVar()
+        self.blob_container_var = tk.StringVar(value="cv-uploads")
+
         self.config_manager = ConfigManager()
         self.image_processor = ImageProcessor()
         
@@ -319,6 +325,39 @@ class SmartRecruiterGUI:
                                                 textvariable=self.scroll_interval_var, width=5, format="%.1f")
         self.scroll_interval_spinbox.pack(side=tk.LEFT)
 
+        # --- NOVO BLOCO: CREDENCIAIS DE STORAGE ---
+        ttk.Label(settings_frame, text="--- Credenciais de Armazenamento (ETL) ---", 
+                font=('Arial', 10, 'bold')).pack(pady=(20, 5), anchor='w', padx=5)
+
+        # MongoDB Connection String
+        mongo_frame = ttk.Frame(settings_frame)
+        mongo_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
+        ttk.Label(mongo_frame, text="MongoDB Connection String:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
+        self.mongo_conn_entry = ttk.Entry(mongo_frame, textvariable=self.mongo_conn_str_var, width=60, show="*") # show="*" esconde a password
+        self.mongo_conn_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+        # MongoDB Database Name
+        db_frame = ttk.Frame(settings_frame)
+        db_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
+        ttk.Label(db_frame, text="MongoDB Database Name:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
+        self.mongo_db_entry = ttk.Entry(db_frame, textvariable=self.mongo_db_name_var, width=30)
+        self.mongo_db_entry.pack(side=tk.LEFT)
+
+        # Azure Blob Connection String
+        blob_frame = ttk.Frame(settings_frame)
+        blob_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
+        ttk.Label(blob_frame, text="Azure Blob Connection String:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
+        self.blob_conn_entry = ttk.Entry(blob_frame, textvariable=self.blob_conn_str_var, width=60, show="*")
+        self.blob_conn_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+        # Azure Blob Container Name
+        container_frame = ttk.Frame(settings_frame)
+        container_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
+        ttk.Label(container_frame, text="Azure Blob Container Name:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
+        self.blob_container_entry = ttk.Entry(container_frame, textvariable=self.blob_container_var, width=30)
+        self.blob_container_entry.pack(side=tk.LEFT)
+        # ------------------------------------------
+
         save_button_settings = ttk.Button(settings_frame, text="Salvar Todas as Configurações", command=self.save_settings)
         save_button_settings.pack(pady=20, padx=10, anchor='center')
 
@@ -345,6 +384,12 @@ class SmartRecruiterGUI:
             self.scroll_interval_var.set(float(self.config_manager.get_setting("scroll_interval", 2.0)))
         except (ValueError, TypeError):
             self.scroll_interval_var.set(2.0)
+
+        # ---> CARREGAR STORAGE
+        self.mongo_conn_str_var.set(self.config_manager.get_setting("mongo_connection_string", ""))
+        self.mongo_db_name_var.set(self.config_manager.get_setting("mongo_db_name", "deliveryai_etl"))
+        self.blob_conn_str_var.set(self.config_manager.get_setting("azure_blob_connection_string", ""))
+        self.blob_container_var.set(self.config_manager.get_setting("azure_blob_container_name", "cv-uploads"))
 
         self.log("Configurações carregadas para a UI.")
 
@@ -385,6 +430,12 @@ class SmartRecruiterGUI:
             self.config_manager.set_setting("scroll_interval", float(self.scroll_interval_var.get()))
         except ValueError:
             pass
+
+        # ---> GUARDAR STORAGE
+        self.config_manager.set_setting("mongo_connection_string", self.mongo_conn_str_var.get())
+        self.config_manager.set_setting("mongo_db_name", self.mongo_db_name_var.get())
+        self.config_manager.set_setting("azure_blob_connection_string", self.blob_conn_str_var.get())
+        self.config_manager.set_setting("azure_blob_container_name", self.blob_container_var.get())
 
         self.log("Configurações salvas.")
         messagebox.showinfo("Configurações", "Configurações salvas com sucesso!")
