@@ -46,6 +46,7 @@ class SmartRecruiterGUI:
         
         # Configurações de download de resumos
         # self.resume_download_dir_var = tk.StringVar()
+        # (Removida para limpeza de código)
         self.resume_link_text_var = tk.StringVar()
         self.save_as_option_index_var = tk.IntVar(value=5)
 
@@ -366,7 +367,7 @@ class SmartRecruiterGUI:
         self.end_date_var.set(self.config_manager.get_setting("etl_end_date", ""))
 
         default_download_dir = os.path.join(os.getcwd(), "downloaded_resumes")
-        self.resume_download_dir_var.set(self.config_manager.get_setting("resume_download_directory", default_download_dir))
+        # self.resume_download_dir_var.set(self.config_manager.get_setting("resume_download_directory", default_download_dir))
         self.resume_link_text_var.set(self.config_manager.get_setting("resume_link_text", "Latest Resume"))
         
         try:
@@ -413,7 +414,7 @@ class SmartRecruiterGUI:
             self.tesseract_available = False
             messagebox.showwarning("Aviso", "O Tesseract OCR não foi encontrado no sistema.\nPor favor, certifique-se de que o instalou com: sudo apt-get install tesseract-ocr")
 
-        self.config_manager.set_setting("resume_download_directory", self.resume_download_dir_var.get())
+        # self.config_manager.set_setting("resume_download_directory", self.resume_download_dir_var.get())
         self.config_manager.set_setting("resume_link_text", self.resume_link_text_var.get())
         
         try:

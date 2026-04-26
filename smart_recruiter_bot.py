@@ -633,7 +633,7 @@ class SmartRecruiterBot:
         self._log_to_gui("Janela 'Guardar Como...' deve estar aberta. Tentando interagir...")
         time.sleep(2)
 
-        download_directory = self.config.get_setting("resume_download_directory", os.path.join(os.getcwd(), "downloaded_resumes"))
+        download_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
         os.makedirs(download_directory, exist_ok=True)
 
         base_filename_no_ext = self._generate_unique_resume_filename(candidate_name)
