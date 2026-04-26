@@ -632,48 +632,49 @@ class SmartRecruiterBot:
             self._log_to_gui(f"Erro ao salvar mapeamento do resumo: {e}")
 
     def _handle_save_as_dialog(self, candidate_name, candidate_profile):
+        """
+        Lida com a janela de diálogo 'Guardar Como...' do sistema operacional.
+        """
         self._log_to_gui("Janela 'Guardar Como...' deve estar aberta. Tentando interagir...")
-        time.sleep(2)
+        time.sleep(1.5)
 
-        download_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
-        os.makedirs(download_directory, exist_ok=True)
+        # Determinar caminho de salvamento temporário
+        download_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
+        if not os.path.exists(download_dir):
+            os.makedirs(download_dir)
 
-        base_filename_no_ext = self._generate_unique_resume_filename(candidate_name)
-        full_path_to_type = os.path.join(download_directory, base_filename_no_ext)
+        # Gerar um nome de ficheiro seguro e único
+        safe_name = "".join([c for c in candidate_name if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+        safe_name = safe_name.replace(' ', '_')
+        unique_id = uuid.uuid4().hex[:8]
+        
+        # O nome EXATO que vai para o disco e para o ETL:
+        filename_with_ext = f"{safe_name}_resume_{unique_id}.pdf"
+        
+        # O Chrome/Linux vai guardar nesta pasta
+        full_path_to_save = os.path.join(download_dir, filename_with_ext)
         
         self._log_to_gui(f"Tentando definir o nome do ficheiro para: '{full_path_to_save}'")
 
+        # Usar pyperclip para copiar o caminho para a área de transferência
+        import pyperclip
         pyperclip.copy(full_path_to_save)
         time.sleep(0.5)
 
-        # Colar o caminho
+        # Colar o caminho na janela de gravação
         pyautogui.hotkey('ctrl', 'v')
         time.sleep(0.5)
         self._log_to_gui(f"Caminho '{full_path_to_save}' colado.")
 
-        # Guardar
+        # Guardar (pressionar Enter)
         self._log_to_gui("Pressionando Enter para tentar salvar o ficheiro...")
         pyautogui.press('enter')
-        
-        save_wait_time = 7
-        self._log_to_gui(f"Aguardando {save_wait_time}s para o ficheiro ser salvo...")
-        time.sleep(save_wait_time) 
 
-        actual_saved_filename_with_ext = base_filename_no_ext
-        try:
-            files_in_dir = os.listdir(download_directory)
-            possible_matches = [f for f in files_in_dir if f.startswith(base_filename_no_ext)]
-            if possible_matches:
-                possible_matches.sort(key=lambda f: os.path.getmtime(os.path.join(download_directory, f)), reverse=True)
-                actual_saved_filename_with_ext = possible_matches[0]
-                self._log_to_gui(f"Ficheiro salvo detectado como: {actual_saved_filename_with_ext}")
-            else:
-                self._log_to_gui(f"Não foi possível confirmar o nome do ficheiro salvo para '{base_filename_no_ext}'.")
-        except Exception as e_find_file:
-            self._log_to_gui(f"Erro ao tentar encontrar o ficheiro salvo: {e_find_file}.")
+        # Esperar um pouco mais para garantir que o download termina fisicamente
+        self._log_to_gui("Aguardando 3s para o ficheiro ser salvo no disco...")
+        time.sleep(3)
         
-        self._save_resume_mapping(candidate_name, candidate_profile, actual_saved_filename_with_ext, download_directory)
-        return True
+        return full_path_to_save # Devolve a string do caminho final
 
     def process_candidate_profile_page(self, candidate_name, candidate_profile, original_window_title=None):
         """Processa a página de perfil do candidato."""
