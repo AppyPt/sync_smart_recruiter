@@ -413,16 +413,46 @@ class SmartRecruiterBot:
                                                 # O MAGNÍFICO PIPELINE DE INJEÇÃO (ETL)
                                                 # ==========================================
                                                 
-                                                # --- ESPERAR PELO FICHEIRO NO DISCO ---
-                                                self._log_to_gui(f"   Aguardando que o ficheiro '{os.path.basename(local_cv_path)}' seja escrito no disco...")
-                                                timeout_contador = 0
-                                                while not os.path.exists(local_cv_path) and timeout_contador < 10:
-                                                    time.sleep(1) 
-                                                    timeout_contador += 1
+                                                # --- NOVO: ESPERAR PELO FICHEIRO NO DISCO (COM LOGS DE DEBUG) ---
+                                                if local_cv_path:
+                                                    # Extrair apenas o nome base (ex: Prince_Godspower_resume_05f9c10b)
+                                                    base_name = os.path.basename(local_cv_path).replace('.pdf', '')
+                                                    target_dir = os.path.dirname(local_cv_path)
+                                                    self._log_to_gui(f"   Aguardando que o ficheiro que começa por '{base_name}' apareça...")
                                                     
-                                                if not os.path.exists(local_cv_path):
-                                                    self._log_to_gui("   ⚠️ ERRO: O Chrome não gravou o ficheiro a tempo ou mudou a extensão!")
-                                                    local_cv_path = None 
+                                                    timeout_contador = 0
+                                                    file_found = False
+                                                    actual_file_path = None
+
+                                                    while timeout_contador < 10:
+                                                        if os.path.exists(target_dir):
+                                                            # LER E MOSTRAR TUDO O QUE ESTÁ NA PASTA
+                                                            files_in_dir = os.listdir(target_dir)
+                                                            self._log_to_gui(f"   [DEBUG DIR] Ficheiros na pasta: {files_in_dir}")
+                                                            
+                                                            for f in files_in_dir:
+                                                                if f.startswith(base_name):
+                                                                    # Ignorar ficheiros temporários de download do Chrome
+                                                                    if f.endswith(".crdownload"):
+                                                                        self._log_to_gui(f"   [DEBUG DIR] Download ainda em curso: {f}")
+                                                                    else:
+                                                                        actual_file_path = os.path.join(target_dir, f)
+                                                                        file_found = True
+                                                                        break
+                                                        
+                                                        if file_found:
+                                                            break
+                                                            
+                                                        time.sleep(1) 
+                                                        timeout_contador += 1
+                                                        
+                                                    if file_found and actual_file_path:
+                                                        self._log_to_gui(f"   ✅ Ficheiro detetado e validado no disco: {actual_file_path}")
+                                                        local_cv_path = actual_file_path # Atualiza para o caminho real encontrado (ex: .pdf.pdf)
+                                                    else:
+                                                        self._log_to_gui("   ⚠️ ERRO: O Chrome não gravou o ficheiro a tempo ou falhou a gravação!")
+                                                        local_cv_path = None 
+                                                # --------------------------------------------
                                                 # --------------------------------------------
 
                                                 sucesso_etl, msg_etl = self.etl_pipeline.process_candidate(
@@ -648,8 +678,8 @@ class SmartRecruiterBot:
         safe_name = safe_name.replace(' ', '_')
         unique_id = uuid.uuid4().hex[:8]
         
-        # O nome EXATO que vai para o disco e para o ETL:
-        filename_with_ext = f"{safe_name}_resume_{unique_id}.pdf"
+        # O Chrome/Linux vai adicionar o .pdf automaticamente no final
+        filename_with_ext = f"{safe_name}_resume_{unique_id}"
         
         # O Chrome/Linux vai guardar nesta pasta
         full_path_to_save = os.path.join(download_dir, filename_with_ext)
@@ -663,18 +693,18 @@ class SmartRecruiterBot:
 
         # Colar o caminho na janela de gravação
         pyautogui.hotkey('ctrl', 'v')
-        time.sleep(0.5)
+        time.sleep(0.8)
         self._log_to_gui(f"Caminho '{full_path_to_save}' colado.")
 
-        # Guardar (pressionar Enter)
-        self._log_to_gui("Pressionando Enter para tentar salvar o ficheiro...")
+        # Guardar - Apenas 1 Enter (Isto grava e seleciona o ficheiro no Linux)
+        self._log_to_gui("Pressionando Enter (Gravação)...")
         pyautogui.press('enter')
 
         # Esperar um pouco mais para garantir que o download termina fisicamente
         self._log_to_gui("Aguardando 3s para o ficheiro ser salvo no disco...")
         time.sleep(3)
         
-        return full_path_to_save # Devolve a string do caminho final
+        return full_path_to_save # Devolve a string do caminho original
 
     def process_candidate_profile_page(self, candidate_name, candidate_profile, original_window_title=None):
         """Processa a página de perfil do candidato."""
