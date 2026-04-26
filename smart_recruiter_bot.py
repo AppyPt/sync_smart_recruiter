@@ -428,6 +428,15 @@ class SmartRecruiterBot:
                                                     local_cv_path=local_cv_path
                                                 )
                                                 self._log_to_gui(f"   ☁️ ETL: {msg_etl}")
+                                                
+                                                # --- NOVO: APAGAR FICHEIRO LOCAL ---
+                                                if local_cv_path and os.path.exists(local_cv_path):
+                                                    try:
+                                                        os.remove(local_cv_path)
+                                                        self._log_to_gui("   🗑️ CV apagado do disco (guardado apenas no Azure).")
+                                                    except Exception as e:
+                                                        self._log_to_gui(f"   ⚠️ Erro ao apagar CV local: {e}")
+                                                # -----------------------------------
                                                 # ==========================================
                                             else:
                                                 self._log_to_gui(f"   ⚠️ Não foi possível baixar o CV de {candidate_name}.")
