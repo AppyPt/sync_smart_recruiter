@@ -398,44 +398,33 @@ class SmartRecruiterBot:
                                                 continue # Salta este candidato e sai do ciclo
                                             
                                             # Chama a função que já tens pronta para baixar o CV e fechar a janela
-                                            sucesso_cv = self.process_candidate_profile_page(
+                                            # Chama a função que já tens pronta para baixar o CV e fechar a janela
+                                            # Agora devolve o PATH em vez de um booleano
+                                            local_cv_path = self.process_candidate_profile_page(
                                                 candidate_name, 
                                                 final_candidate_entry["profile"]
                                             )
                                             
-                                            if sucesso_cv:
+                                            if local_cv_path: # Se não for falso
                                                 self._log_to_gui(f"   ✅ CV de {candidate_name} guardado localmente com sucesso!")
                                                 final_candidate_entry["cv_downloaded"] = True
                                                 
                                                 # ==========================================
                                                 # O MAGNÍFICO PIPELINE DE INJEÇÃO (ETL)
                                                 # ==========================================
-                                                download_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
-                                                map_file = os.path.join(download_dir, "resume_map.json")
-                                                local_cv_path = None
                                                 
-                                                if os.path.exists(map_file):
-                                                    import json
-                                                    with open(map_file, 'r', encoding='utf-8') as f:
-                                                        mapping_data = json.load(f)
-                                                        for filename, data in mapping_data.items():
-                                                            if data.get("candidate_name") == candidate_name:
-                                                                local_cv_path = os.path.join(download_dir, filename)
-                                                                break
-                                                
-                                                # --- NOVO: ESPERAR PELO FICHEIRO NO DISCO ---
-                                                if local_cv_path:
-                                                    self._log_to_gui(f"   Aguardando que o ficheiro '{os.path.basename(local_cv_path)}' seja escrito no disco...")
-                                                    timeout_contador = 0
-                                                    while not os.path.exists(local_cv_path) and timeout_contador < 10:
-                                                        time.sleep(1) # Espera 1 segundo e verifica de novo
-                                                        timeout_contador += 1
-                                                        
-                                                    if not os.path.exists(local_cv_path):
-                                                        self._log_to_gui("   ⚠️ ERRO: O Chrome não gravou o ficheiro a tempo ou mudou a extensão!")
-                                                        local_cv_path = None # Cancela o upload do blob para não dar erro
+                                                # --- ESPERAR PELO FICHEIRO NO DISCO ---
+                                                self._log_to_gui(f"   Aguardando que o ficheiro '{os.path.basename(local_cv_path)}' seja escrito no disco...")
+                                                timeout_contador = 0
+                                                while not os.path.exists(local_cv_path) and timeout_contador < 10:
+                                                    time.sleep(1) 
+                                                    timeout_contador += 1
+                                                    
+                                                if not os.path.exists(local_cv_path):
+                                                    self._log_to_gui("   ⚠️ ERRO: O Chrome não gravou o ficheiro a tempo ou mudou a extensão!")
+                                                    local_cv_path = None 
                                                 # --------------------------------------------
-                                                
+
                                                 sucesso_etl, msg_etl = self.etl_pipeline.process_candidate(
                                                     candidate_info=final_candidate_entry, 
                                                     local_cv_path=local_cv_path
@@ -646,65 +635,41 @@ class SmartRecruiterBot:
         self._log_to_gui("Janela 'Guardar Como...' deve estar aberta. Tentando interagir...")
         time.sleep(2)
 
-        download_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
-        os.makedirs(download_directory, exist_ok=True)
+        download_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloaded_resumes")
+        os.makedirs(download_dir, exist_ok=True)
 
-        base_filename_no_ext = self._generate_unique_resume_filename(candidate_name)
-        full_path_to_type = os.path.join(download_directory, base_filename_no_ext)
+        # Gerar um nome de ficheiro seguro e único
+        safe_name = "".join([c for c in candidate_name if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+        safe_name = safe_name.replace(' ', '_')
+        unique_id = uuid.uuid4().hex[:8]
         
-        self._log_to_gui(f"Tentando definir o nome do ficheiro para: '{full_path_to_type}' (sem extensão ainda)")
-
-        pasted_successfully = False
-        if pyperclip:
-            try:
-                pyperclip.copy(full_path_to_type)
-                time.sleep(0.3)
-                pyautogui.hotkey('alt', 'n') 
-                time.sleep(0.5)
-                pyautogui.hotkey('ctrl', 'a')
-                time.sleep(0.1)
-                pyautogui.press('delete')
-                time.sleep(0.1)
-                pyautogui.hotkey('ctrl', 'v')
-                self._log_to_gui(f"Caminho '{full_path_to_type}' colado.")
-                pasted_successfully = True
-                time.sleep(0.5)
-            except Exception as e_paste:
-                self._log_to_gui(f"Erro ao tentar colar com pyperclip: {e_paste}. Tentando escrita direta.")
+        # O nome EXATO que vai para o disco e para o ETL:
+        filename_with_ext = f"{safe_name}_resume_{unique_id}.pdf"
         
-        if not pasted_successfully:
-            pyautogui.hotkey('alt', 'n')
-            time.sleep(0.3)
-            pyautogui.hotkey('ctrl', 'a')
-            time.sleep(0.1)
-            pyautogui.press('delete')
-            time.sleep(0.1)
-            pyautogui.write(full_path_to_type, interval=0.03)
-            self._log_to_gui(f"Caminho '{full_path_to_type}' escrito diretamente.")
-            time.sleep(0.5)
+        # O Chrome/Linux vai guardar nesta pasta
+        full_path_to_save = os.path.join(download_dir, filename_with_ext)
+        
+        self._log_to_gui(f"Tentando definir o nome do ficheiro para: '{full_path_to_save}'")
 
+        pyperclip.copy(full_path_to_save)
+        time.sleep(0.5)
+
+        # Colar o caminho
+        pyautogui.hotkey('ctrl', 'v')
+        time.sleep(0.5)
+        self._log_to_gui(f"Caminho '{full_path_to_save}' colado.")
+
+        # Guardar
         self._log_to_gui("Pressionando Enter para tentar salvar o ficheiro...")
         pyautogui.press('enter')
-        
-        save_wait_time = 7
-        self._log_to_gui(f"Aguardando {save_wait_time}s para o ficheiro ser salvo...")
-        time.sleep(save_wait_time) 
 
-        actual_saved_filename_with_ext = base_filename_no_ext
-        try:
-            files_in_dir = os.listdir(download_directory)
-            possible_matches = [f for f in files_in_dir if f.startswith(base_filename_no_ext)]
-            if possible_matches:
-                possible_matches.sort(key=lambda f: os.path.getmtime(os.path.join(download_directory, f)), reverse=True)
-                actual_saved_filename_with_ext = possible_matches[0]
-                self._log_to_gui(f"Ficheiro salvo detectado como: {actual_saved_filename_with_ext}")
-            else:
-                self._log_to_gui(f"Não foi possível confirmar o nome do ficheiro salvo para '{base_filename_no_ext}'.")
-        except Exception as e_find_file:
-            self._log_to_gui(f"Erro ao tentar encontrar o ficheiro salvo: {e_find_file}.")
+        # Esperar um pouco mais para garantir que o download termina fisicamente
+        self._log_to_gui("Aguardando 3s para o ficheiro ser salvo no disco...")
+        time.sleep(3)
+
+        # APAGÁMOS A PARTE DO JSON AQUI!
         
-        self._save_resume_mapping(candidate_name, candidate_profile, actual_saved_filename_with_ext, download_directory)
-        return True
+        return full_path_to_save # Devolve a string do caminho
 
     def process_candidate_profile_page(self, candidate_name, candidate_profile, original_window_title=None):
         """Processa a página de perfil do candidato."""
@@ -767,17 +732,18 @@ class SmartRecruiterBot:
 
             success = self._handle_save_as_dialog(candidate_name, candidate_profile)
             
-            if success:
-                time.sleep(2)
+            # --- NOVO: Lidar com o caminho devolvido ---
+            if isinstance(success, str): # Se for uma string (o caminho), o download funcionou
                 self._log_to_gui("Download concluído. Fechando janela do perfil com Alt+F4...")
                 pyautogui.hotkey('alt', 'f4')
-                time.sleep(2)
-                self._log_to_gui("=== Processamento do perfil concluído com sucesso ===\n")
-                
-                if hasattr(self.image_processor, 'debug'):
-                    self.image_processor.debug = debug_was_active
-                
-                return True
+                time.sleep(1.0)
+                self._log_to_gui("=== Processamento do perfil concluído com sucesso ===")
+                return success # Devolver o caminho até cá acima
+            else:
+                self._log_to_gui("Download falhou na etapa final.")
+                pyautogui.hotkey('alt', 'f4')
+                return False
+            # ---------------------------------------------
         else:
             self._log_to_gui("AVISO: Não foi possível encontrar o link do currículo após tentar todas as variações.")
 
