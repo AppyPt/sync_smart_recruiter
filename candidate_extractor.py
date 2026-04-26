@@ -173,7 +173,15 @@ class CandidateExtractor:
                     region_in_image_to_ocr=region
                 )
                 
-                candidate_data["date"] = self._clean_text(date_text_raw)
+                # Limpeza básica da data
+                date_clean = self._clean_text(date_text_raw)
+                date_clean = re.sub(r'[^a-zA-Z0-9:,\s]', '', date_clean).strip()
+                
+                # Remover texto inútil antes da data (case-insensitive)
+                import re as regex_extra
+                date_clean = regex_extra.sub(r'(?i).*added to system:\s*', '', date_clean).strip()
+                
+                candidate_data["date"] = date_clean
                 if candidate_data["date"]:
                     extracted_something = True
                     print(f"DEBUG EXTRACT: Data extraída: '{candidate_data['date']}'")

@@ -143,7 +143,6 @@ class ETLPipeline:
                 "last_capture_at": now,
                 "etl_status": "PROCESSED",
                 "cv_metadata": {
-                    "local_path": local_cv_path,
                     "blob_url": blob_url,
                     "updated_at": now
                 }

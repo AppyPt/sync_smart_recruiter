@@ -45,7 +45,7 @@ class SmartRecruiterGUI:
         # --- INICIALIZAÇÃO DAS VARIÁVEIS TKINTER PARA CONFIGURAÇÕES ---
         
         # Configurações de download de resumos
-        self.resume_download_dir_var = tk.StringVar()
+        # self.resume_download_dir_var = tk.StringVar()
         self.resume_link_text_var = tk.StringVar()
         self.save_as_option_index_var = tk.IntVar(value=5)
 
@@ -288,12 +288,12 @@ class SmartRecruiterGUI:
         ttk.Label(settings_frame, text="--- Configurações de Download de CVs ---", 
                 font=('Arial', 10, 'bold')).pack(pady=(15, 5), anchor='w', padx=5)
 
-        dir_frame = ttk.Frame(settings_frame)
-        dir_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(dir_frame, text="Diretório de Download:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.resume_download_dir_entry = ttk.Entry(dir_frame, textvariable=self.resume_download_dir_var, width=50)
-        self.resume_download_dir_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
-        ttk.Button(dir_frame, text="Procurar...", command=self.browse_resume_download_directory).pack(side=tk.LEFT, padx=(5,0))
+        # dir_frame = ttk.Frame(settings_frame)
+        # dir_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
+        # ttk.Label(dir_frame, text="Diretório de Download:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
+        # self.resume_download_dir_entry = ttk.Entry(dir_frame, textvariable=self.resume_download_dir_var, width=50)
+        # self.resume_download_dir_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
+        # ttk.Button(dir_frame, text="Procurar...", command=self.browse_resume_download_directory).pack(side=tk.LEFT, padx=(5,0))
 
         link_text_frame = ttk.Frame(settings_frame)
         link_text_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
