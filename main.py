@@ -216,42 +216,8 @@ class SmartRecruiterGUI:
         self.calibration_status_text.grid(row=1, column=0, padx=5, pady=5, sticky=tk.EW)
         
         self.update_calibration_status()
-        
-        # Botões de calibração rápida
-        rel_calib_frame = ttk.LabelFrame(main_frame, text="Calibração Rápida (Relativa ao Círculo)")
-        rel_calib_frame.pack(fill=tk.X, pady=10)
-        
-        # Botão para Calibrar Nome
-        self.btn_calib_name = ttk.Button(
-            rel_calib_frame, 
-            text="1. Calibrar Nome (Relativo ao Círculo)", 
-            command=self.calibrate_name_relative
-        )
-        self.btn_calib_name.pack(fill=tk.X, pady=2)
-        
-        # Botão para Calibrar Perfil
-        self.btn_calib_profile = ttk.Button(
-            rel_calib_frame, 
-            text="2. Calibrar Perfil (Relativo ao Círculo)", 
-            command=self.calibrate_profile_relative
-        )
-        self.btn_calib_profile.pack(fill=tk.X, pady=2)
-        
-        # Botão para Calibrar Data
-        self.btn_calib_date = ttk.Button(
-            rel_calib_frame, 
-            text="3. Calibrar Data (Relativo ao Círculo)", 
-            command=self.calibrate_date_relative
-        )
-        self.btn_calib_date.pack(fill=tk.X, pady=2)
-        
-        # Botão para Calibrar Localização
-        self.btn_calib_location = ttk.Button(
-            rel_calib_frame, 
-            text="4. Calibrar Localização (Relativo ao Círculo)", 
-            command=self.calibrate_location_relative
-        )
-        self.btn_calib_location.pack(fill=tk.X, pady=2)
+    
+    def setup_results_tab(self):
         main_frame = ttk.Frame(self.results_tab)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
@@ -634,48 +600,6 @@ class SmartRecruiterGUI:
             self.root.after(0, self.hide_panic_window) # <--- DESTRÓI A JANELA DE PÂNICO
             self.root.after(0, lambda: self.update_status("Pronto"))
             self.root.after(0, lambda: self.update_progress(100))
-
-    def calibrate_location_relative(self):
-        """
-        Inicia a calibração da região da Localização relativa ao centro do círculo de perfil.
-        """
-        ref_point = self.config_manager.get_setting("reference_profile_circle_center")
-        if not ref_point:
-            messagebox.showwarning("Calibração", "Primeiro deve calibrar a 'Célula de Candidato' para definir o círculo de referência.")
-            return
-
-        self.log("A iniciar calibração da Localização relativa ao círculo...")
-        # O nome da região deve seguir o padrão para ser reconhecido pelo extractor depois
-        region_name = "Localização (Relativo ao Círculo)"
-        
-        # Chama o calibrador para desenhar o retângulo
-        coords = self.calibrator.calibrate_relative_to_point(
-            region_name, 
-            tuple(ref_point)
-        )
-
-        if coords:
-            # Guarda também a versão "rel_to_cell" para compatibilidade com o extractor
-            # Calculamos o offset baseando-nos no mesmo ref_point
-            cell_region = self.config_manager.get_setting("regions", {}).get("Célula de Candidato (com círculo de perfil)")
-            if cell_region:
-                offset_x = coords['left'] - cell_region['left']
-                offset_y = coords['top'] - cell_region['top']
-                
-                rel_to_cell = {
-                    "left": offset_x,
-                    "top": offset_y,
-                    "width": coords['width'],
-                    "height": coords['height']
-                }
-                
-                # Atualiza o ficheiro de configuração
-                regions = self.config_manager.get_setting("regions", {})
-                regions["Localização (Dentro da Célula)_rel_to_cell"] = rel_to_cell
-                self.config_manager.set_setting("regions", regions)
-                
-            self.log(f"Localização calibrada com sucesso: {coords}")
-            messagebox.showinfo("Calibração", "Região da Localização salva com sucesso!")
 
     def reset_calibrations(self):
         result = messagebox.askyesno(
