@@ -105,6 +105,15 @@ class SmartRecruiterBot:
                         return {"left": data["offset_x"], "top": data["offset_y"], "width": data["width"], "height": data["height"]}
                     elif "left" in data: 
                         return data
+        elif region_name == "Localização (Dentro da Célula)_rel_to_cell":
+            alt_keys = ["Localização (Relativo ao Círculo)_offset_from_circle", "Localização (Relativo ao Círculo)"]
+            for key in alt_keys:
+                if key in current_regions_from_config_file:
+                    data = current_regions_from_config_file[key]
+                    if "offset_x" in data: 
+                        return {"left": data["offset_x"], "top": data["offset_y"], "width": data["width"], "height": data["height"]}
+                    elif "left" in data: 
+                        return data
         
         self._log_to_gui(f"ERRO BOT: Região '{region_name}' não encontrada na calibração.")
         raise ValueError(f"Região '{region_name}' não encontrada na calibração.")
@@ -117,7 +126,7 @@ class SmartRecruiterBot:
             self._log_to_gui(f"ERRO BOT ao capturar região '{region_name_for_capture}': {e}")
             return Image.new('RGB', (100, 100), color='red')
 
-    def _process_individual_cell(self, individual_cell_image_pil, circle_info_in_list_image, cell_start_x_in_list, cell_start_y_in_list, name_sub_region_calib, profile_sub_region_calib, date_sub_region_calib=None):
+    def _process_individual_cell(self, individual_cell_image_pil, circle_info_in_list_image, cell_start_x_in_list, cell_start_y_in_list, name_sub_region_calib, profile_sub_region_calib, date_sub_region_calib=None, location_sub_region_calib=None): # <--- NOVO ARGUMENTO
         if not individual_cell_image_pil: 
             return None
         
@@ -154,11 +163,23 @@ class SmartRecruiterBot:
                 "height": int(date_sub_region_calib["height"])
             }
 
+        adjusted_location_coords_for_ocr = None
+        if location_sub_region_calib and circle_info_in_list_image:
+            circle_center_x_rel_to_cell = circle_info_in_list_image['center_x_abs'] - cell_start_x_in_list
+            circle_center_y_rel_to_cell = circle_info_in_list_image['center_y_abs'] - cell_start_y_in_list
+            adjusted_location_coords_for_ocr = {
+                "left": int(circle_center_x_rel_to_cell + location_sub_region_calib["left"]), 
+                "top": int(circle_center_y_rel_to_cell + location_sub_region_calib["top"]), 
+                "width": int(location_sub_region_calib["width"]), 
+                "height": int(location_sub_region_calib["height"])
+            }
+
         extracted_data = self.candidate_extractor.extract_name_and_profile_from_cell_image(
             individual_cell_image_pil, 
             initial_name_ocr_region_rel_to_cell, 
             adjusted_profile_coords_for_ocr,
-            adjusted_date_coords_for_ocr
+            adjusted_date_coords_for_ocr,
+            adjusted_location_coords_for_ocr # <--- ADICIONADO AQUI
         )
         
         if not extracted_data or not extracted_data.get("name"): 
@@ -255,6 +276,11 @@ class SmartRecruiterBot:
                 date_sub_region_calib = self._get_calibrated_region_coords("Data (Dentro da Célula)_rel_to_cell")
             except ValueError:
                 self._log_to_gui("AVISO BOT: Sub-região 'Data' não calibrada.")
+            location_sub_region_calib = None
+            try:
+                location_sub_region_calib = self._get_calibrated_region_coords("Localização (Dentro da Célula)_rel_to_cell")
+            except ValueError:
+                self._log_to_gui("AVISO BOT: Sub-região 'Localização' não calibrada.")
 
             # Calculate scroll points
             scroll_point_x = list_area_coords["left"] + list_area_coords["width"] // 2
@@ -349,7 +375,8 @@ class SmartRecruiterBot:
                             x_cell, y_cell,
                             name_sub_region_calib,
                             profile_sub_region_calib,
-                            date_sub_region_calib
+                            date_sub_region_calib,
+                            location_sub_region_calib # <--- ADICIONADO AQUI
                         )
 
                         if cell_processing_result and cell_processing_result['extracted_data']:
@@ -360,7 +387,8 @@ class SmartRecruiterBot:
                                     final_candidate_entry = {
                                         "name": candidate_name,
                                         "profile": candidate_data.get("profile", "").strip(),
-                                        "date": candidate_data.get("date", "").strip()
+                                        "date": candidate_data.get("date", "").strip(),
+                                        "location": candidate_data.get("location", "").strip() # <--- ADICIONADO AQUI
                                     }
                                     all_unique_candidates_data.append(final_candidate_entry)
                                     processed_candidate_names.add(candidate_name)

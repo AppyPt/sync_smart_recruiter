@@ -312,8 +312,8 @@ class ImageProcessor:
             # Configuração do OCR
             custom_config = (
                 '--oem 3 '
-                '--psm 7 '
-                '-l por+por_best+eng '  # Changed to include Portuguese
+                '--psm 6 '  # <--- MUDANÇA AQUI: Alterar de 7 para 6
+                '-l por+por_best+eng '
                 '-c preserve_interword_spaces=1 '
                 '-c language_model_penalty_non_dict_word=0.8 '
                 '-c language_model_penalty_non_freq_dict_word=0.8'

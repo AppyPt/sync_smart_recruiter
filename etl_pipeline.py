@@ -135,18 +135,19 @@ class ETLPipeline:
             "$setOnInsert": {
                 "candidate_hash": candidate_hash,
                 "name": name,
-                "profile": profile,
                 "system_added_date_str": candidate_info.get("date"),
                 "created_at": now
             },
-            "$set": {
-                "last_capture_at": now,
-                "etl_status": "PROCESSED",
-                "cv_metadata": {
-                    "blob_url": blob_url,
-                    "updated_at": now
-                }
-            },
+             "$set": {
+                 "profile": profile, # Movemos o profile para $set caso a pessoa mude de cargo
+                 "location": candidate_info.get("location", ""), # <--- NOVO CAMPO INJETADO
+                 "last_capture_at": now,
+                 "etl_status": "PROCESSED",
+                 "cv_metadata": {
+                     "blob_url": blob_url,
+                     "updated_at": now
+                 }
+             },
             "$push": {
                 "processing_history": history_entry
             }
