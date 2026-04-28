@@ -53,8 +53,6 @@ class SmartRecruiterGUI:
         self.scroll_interval_var = tk.DoubleVar(value=2.0)
         
         # Variáveis do ETL (Filtro de Datas)
-        self.start_date_var = tk.StringVar()
-        self.end_date_var = tk.StringVar()
 
         # ---> NOVAS VARIÁVEIS DE STORAGE:
         self.mongo_conn_str_var = tk.StringVar()
@@ -122,10 +120,10 @@ class SmartRecruiterGUI:
         
         instruction_label = ttk.Label(
             capture_frame, 
-            text="Pipeline de Extração de Candidatos (ETL).\n"
-                "1. Configure os parâmetros do período que deseja extrair.\n"
-                "2. Garanta que a região da lista está calibrada.\n"
-                "3. Clique em 'Iniciar Captura' e não mova o rato.\n",
+            text="Pipeline Automático de Extração (ETL).\n"
+                "1. Garanta que a lista e as respetivas sub-regiões estão devidamente calibradas.\n"
+                "2. Clique em 'Iniciar Captura' e não mova o rato.\n"
+                "3. O robô fará a extração continuamente. Use o botão de Pânico no ecrã para parar.\n",
             justify=tk.LEFT,
             wraplength=600
         )
@@ -134,18 +132,6 @@ class SmartRecruiterGUI:
         main_capture_frame = ttk.Frame(capture_frame)
         main_capture_frame.pack(fill=tk.BOTH, padx=10, pady=10, expand=True)
         
-        # --- PARÂMETROS DO ETL ---
-        etl_frame = ttk.LabelFrame(main_capture_frame, text="Parâmetros de Extração")
-        etl_frame.pack(fill=tk.X, pady=(0, 15))
-        
-        date_frame = ttk.Frame(etl_frame)
-        date_frame.pack(fill=tk.X, padx=10, pady=10)
-        
-        ttk.Label(date_frame, text="Data Início (DD/MM/AAAA):").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
-        ttk.Entry(date_frame, textvariable=self.start_date_var, width=15).grid(row=0, column=1, padx=5, pady=5)
-        
-        ttk.Label(date_frame, text="Data Fim (DD/MM/AAAA):").grid(row=0, column=2, padx=15, pady=5, sticky=tk.W)
-        ttk.Entry(date_frame, textvariable=self.end_date_var, width=15).grid(row=0, column=3, padx=5, pady=5)
 
         # --- BOTÕES ---
         top_options_frame = ttk.Frame(main_capture_frame)
@@ -349,8 +335,6 @@ class SmartRecruiterGUI:
         save_button_settings.pack(pady=20, padx=10, anchor='center')
 
     def load_settings_to_ui(self):
-        self.start_date_var.set(self.config_manager.get_setting("etl_start_date", ""))
-        self.end_date_var.set(self.config_manager.get_setting("etl_end_date", ""))
 
         default_download_dir = os.path.join(os.getcwd(), "downloaded_resumes")
         # self.resume_download_dir_var.set(self.config_manager.get_setting("resume_download_directory", default_download_dir))
@@ -378,8 +362,6 @@ class SmartRecruiterGUI:
 
     def save_settings(self):
         # Guardar as datas no config manager
-        self.config_manager.set_setting("etl_start_date", self.start_date_var.get())
-        self.config_manager.set_setting("etl_end_date", self.end_date_var.get())
         
         # Validar se o Tesseract continua acessível no sistema
         try:
@@ -499,14 +481,7 @@ class SmartRecruiterGUI:
             messagebox.showerror("Erro de Calibração", f"Regiões em falta: {', '.join(missing_regions)}.")
             return
             
-        start_date = self.start_date_var.get().strip()
-        end_date = self.end_date_var.get().strip()
-        
-        self.log(f"Iniciando ETL. Período: {start_date if start_date else 'Início'} a {end_date if end_date else 'Fim'}")
-        
-        # Guarda as datas na config antes de correr para o bot poder aceder se necessário
-        self.config_manager.set_setting("etl_start_date", start_date)
-        self.config_manager.set_setting("etl_end_date", end_date)
+        self.log("Iniciando Pipeline de Extração ETL...")
         
         self.running = True
         self.bot.stop_requested = False # <--- GARANTIR QUE A VARIÁVEL ESTÁ LIMPA

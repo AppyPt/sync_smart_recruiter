@@ -82,6 +82,34 @@ class OllamaClient:
             print(f"Erro ao avaliar nome '{candidate_name}': {result.get('error')} | Raw: {result.get('raw')}")
             return 0 # Em caso de dúvida/erro, devolve 0 ou podes mudar para devolver None se quiseres tratar o erro na interface
 
+    def evaluate_ict_role_probability(self, role_text):
+        """
+        Avalia a probabilidade (0-100) de um cargo pertencer à área de TI, 
+        Sistemas de Informação ou Consultoria Tecnológica.
+        """
+        if not role_text or not role_text.strip():
+            return 0
+            
+        system_prompt = """
+        You are an expert IT recruiter. Your ONLY task is to evaluate if a given job title or role description is related to Information and Communication Technology (ICT), IT Consulting, Software Development, Data Science, or similar technology fields.
+        Return ONLY a valid JSON object with a single key "probability" containing an integer from 0 to 100.
+        0 means completely unrelated (e.g., Nurse, Chef, Driver, Retail Sales), 100 means definitely Tech/IT (e.g., Software Engineer, Data Analyst, IT Consultant, Network Engineer).
+        Do not include ANY other text, explanations, or markdown formatting.
+        Example output: {"probability": 95}
+        """
+        
+        user_prompt = f"Role to evaluate: {role_text}"
+        
+        result = self._call_llm(system_prompt, user_prompt)
+        
+        if result.get("success"):
+            prob = result["data"].get("probability", 0)
+            return max(0, min(100, int(prob)))
+        else:
+            print(f"Erro ao avaliar cargo '{role_text}': {result.get('error')} | Raw: {result.get('raw')}")
+            # Em caso de erro do LLM, devolvemos 100 para não rejeitar injustamente um bom candidato por falha técnica
+            return 100
+
 # Teste direto no terminal
 if __name__ == "__main__":
     client = OllamaClient()
