@@ -388,6 +388,29 @@ class SmartRecruiterBot:
                                     new_candidates_found_this_iteration += 1
                                     
                                     # =================================================================
+                                    # INÍCIO DO FILTRO DE LOCALIZAÇÃO (FAIL-FAST)
+                                    # =================================================================
+                                    candidate_location = candidate_data.get("location", "").strip()
+                                    if candidate_location:
+                                        import re
+                                        loc_lower = candidate_location.lower()
+                                        
+                                        # Verifica se contém "portugal" ou "pt" (como palavra isolada para evitar "Egypt")
+                                        # Podes adicionar mais keywords aqui (ex: "lisboa", "porto") se quiseres ser mais abrangente
+                                        is_pt = "portugal" in loc_lower or re.search(r'\bpt\b', loc_lower)
+                                        
+                                        if not is_pt:
+                                            self._log_to_gui(f"   ❌ REJEITADO (Loc): '{candidate_name}' ignorado. Localização '{candidate_location}' não é PT.")
+                                            continue # Descarta imediatamente, nem sequer vai ao Ollama!
+                                        else:
+                                            self._log_to_gui(f"   📍 Localização pré-aprovada na lista: '{candidate_location}'.")
+                                    else:
+                                        self._log_to_gui(f"   📍 Localização ausente na lista. Segue para validação de telefone...")
+                                    # =================================================================
+                                    # FIM DO FILTRO DE LOCALIZAÇÃO
+                                    # =================================================================
+
+                                    # =================================================================
                                     # INÍCIO DO FILTRO DE CARGO POR IA (OLLAMA)
                                     # =================================================================
                                     candidate_profile = candidate_data.get("profile", "").strip()
