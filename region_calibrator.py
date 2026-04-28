@@ -293,8 +293,8 @@ class RegionCalibrator:
                     self.info_label.config(text=f"'Célula de Candidato' definida. Círculo estimado, não detectado automaticamente.")
                     print(f"Círculo estimado: {self.reference_profile_circle_center}")
             
-            # Para Nome, Perfil ou Data, calcular offsets relativos ao círculo
-            elif defined_region_name in ["Nome (Relativo ao Círculo)", "Perfil (Relativo ao Círculo)", "Data (Relativo ao Círculo)", "Localização (Relativo ao Círculo)"]: # <--- LISTA ATUALIZADA
+            # Para Nome, Perfil, Data ou Localização, calcular offsets relativos ao círculo
+            elif defined_region_name in ["Nome (Relativo ao Círculo)", "Perfil (Relativo ao Círculo)", "Data (Relativo ao Círculo)", "Localização (Relativo ao Círculo)"]:
                 if self.reference_profile_circle_center:
                     # Calcular offsets relativos ao centro do círculo
                     offset_x = int(abs_x1) - self.reference_profile_circle_center["x"]
@@ -319,6 +319,10 @@ class RegionCalibrator:
                         "height": int(height_abs)
                     }
                     
+                    # <--- CORREÇÃO AQUI: Apagar a gravação absoluta inútil que causa duplicação
+                    if defined_region_name in self.regions:
+                        del self.regions[defined_region_name]
+                        
                     self.info_label.config(text=f"{defined_region_name} definida. Offset do círculo: ({offset_x},{offset_y})")
                     print(f"Coordenadas relativas salvas para {compat_key}: {self.regions[compat_key]}")
                 else:
@@ -421,22 +425,26 @@ class RegionCalibrator:
 
             # Para regiões _rel_to_cell, as coordenadas 'left' e 'top' são offsets.
             # Precisamos desenhá-las em relação ao reference_profile_circle_center.
-            if name.endswith("_rel_to_cell") and self.reference_profile_circle_center:
-                # 'left' e 'top' em region_coords_abs são os offsets x e y
-                offset_x = region_coords_abs["left"]
-                offset_y = region_coords_abs["top"]
-                
-                # Coordenadas absolutas do canto superior esquerdo da região relativa
-                abs_rel_left = self.reference_profile_circle_center["x"] + offset_x
-                abs_rel_top = self.reference_profile_circle_center["y"] + offset_y
-                
-                x1_c = abs_rel_left * self.scale_factor
-                y1_c = abs_rel_top * self.scale_factor
-                x2_c = (abs_rel_left + region_coords_abs["width"]) * self.scale_factor
-                y2_c = (abs_rel_top + region_coords_abs["height"]) * self.scale_factor
-                
-                self.canvas.create_rectangle(x1_c, y1_c, x2_c, y2_c, outline=color, width=2, dash=(3,3), tags=("region_rect", name)) # Tracejado para relativo
-            else: # Para regiões absolutas
+            if name.endswith("_rel_to_cell"):
+                if self.reference_profile_circle_center:
+                    # 'left' e 'top' em region_coords_abs são os offsets x e y
+                    offset_x = region_coords_abs["left"]
+                    offset_y = region_coords_abs["top"]
+                    
+                    # Coordenadas absolutas do canto superior esquerdo da região relativa
+                    abs_rel_left = self.reference_profile_circle_center["x"] + offset_x
+                    abs_rel_top = self.reference_profile_circle_center["y"] + offset_y
+                    
+                    x1_c = abs_rel_left * self.scale_factor
+                    y1_c = abs_rel_top * self.scale_factor
+                    x2_c = (abs_rel_left + region_coords_abs["width"]) * self.scale_factor
+                    y2_c = (abs_rel_top + region_coords_abs["height"]) * self.scale_factor
+                    
+                    self.canvas.create_rectangle(x1_c, y1_c, x2_c, y2_c, outline=color, width=2, dash=(3,3), tags=("region_rect", name))
+                else:
+                    # Se não há círculo de referência, ignoramos o desenho para não atirar caixas para o canto superior!
+                    continue
+            else: # Para regiões absolutas (ex: Lista de Candidatos)
                 self.canvas.create_rectangle(x1_c, y1_c, x2_c, y2_c, outline=color, width=2, tags=("region_rect", name))
 
             self.canvas.create_text(x1_c + 5, y1_c + 5, text=name, anchor=tk.NW, fill=color, font=("Arial", 8, "bold"), tags=("region_text", name))
