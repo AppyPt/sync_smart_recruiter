@@ -734,6 +734,39 @@ class SmartRecruiterBot:
         self._log_to_gui(f"\n=== Processando página de perfil para: {candidate_name} ===")
         time.sleep(2)
 
+        # ======================================================
+        # INÍCIO DA VALIDAÇÃO DO INDICATIVO TELEFÓNICO (+351)
+        # ======================================================
+        self._log_to_gui("A validar indicativo de telefone (+351)...")
+        try:
+            search_area_coords = self._get_calibrated_region_coords("Área de Busca do 'Latest Resume' (Página do Perfil)")
+            region_image_pil = pyautogui.screenshot(region=(
+                search_area_coords["left"],
+                search_area_coords["top"],
+                search_area_coords["width"],
+                search_area_coords["height"]
+            ))
+            
+            # Extrair todo o texto da região de cabeçalho
+            header_text = self.image_processor.extract_text(region_image_pil)
+            
+            # Remover espaços e traços para evitar falhas do OCR (ex: "+ 351" ou "+351-")
+            clean_header = header_text.replace(" ", "").replace("-", "")
+            
+            # Se não encontrar "+351" nem "00351", rejeita automaticamente
+            if "+351" not in clean_header and "00351" not in clean_header:
+                self._log_to_gui("❌ CANDIDATO REJEITADO: Sem indicativo PT (+351) no perfil.")
+                self._log_to_gui("Fechando janela do perfil com Alt+F4...")
+                pyautogui.hotkey('alt', 'f4')
+                time.sleep(1.0)
+                return False  # Aborta imediatamente e diz à rotina principal que falhou/rejeitou
+            else:
+                self._log_to_gui("✅ Indicativo de Portugal detetado. Prosseguindo para o CV...")
+        except Exception as e:
+            self._log_to_gui(f"⚠️ Erro ao tentar validar telefone: {e}. A prosseguir por segurança...")
+        # ======================================================
+        # FIM DA VALIDAÇÃO DO INDICATIVO TELEFÓNICO
+        # ======================================================
 
         resume_link_variations = [
             "Latest Resume",
