@@ -59,7 +59,6 @@ class SmartRecruiterBot:
         self.config = config_manager 
         self.image_processor = image_processor
         self.candidate_extractor = candidate_extractor
-        self.max_scroll_iterations = 20 
         self.scroll_interval = 2.0 
         self.log_gui_callback = None
         self.gui_log_callback_capture = None
@@ -306,7 +305,7 @@ class SmartRecruiterBot:
             consecutive_iterations_without_new_candidates = 0
             cumulative_scroll_pixels = 0  # Para calcular posição Y absoluta
 
-            while iteration < self.max_scroll_iterations:
+            while True:
                 # ---> NOVO TRAVÃO 1
                 if self.stop_requested:
                     self._log_to_gui("🛑 Captura interrompida pelo utilizador.")
@@ -528,9 +527,6 @@ class SmartRecruiterBot:
                     self._log_to_gui("Nenhum novo candidato encontrado em 3 iterações consecutivas. Finalizando captura.")
                     break
 
-                if iteration >= self.max_scroll_iterations:
-                    self._log_to_gui("Número máximo de iterações atingido. Finalizando captura.")
-                    break
 
                 # ✅ ALTERAÇÃO 3: Cálculo dinâmico do scroll
                 base_scroll_pixels = int(list_area_coords["height"] * SCROLL_PERCENTAGE)
@@ -821,7 +817,7 @@ class SmartRecruiterBot:
             return
 
         processed_ai_candidate_names = set()
-        MAX_SCROLL_ITERATIONS_PER_TARGET = self.max_scroll_iterations 
+        MAX_SCROLL_ITERATIONS_PER_TARGET = 100 # Limite de segurança interno
         
         try: 
             list_area_coords_on_screen = self._get_calibrated_region_coords("Lista de Candidatos")

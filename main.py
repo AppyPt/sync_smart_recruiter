@@ -48,10 +48,8 @@ class SmartRecruiterGUI:
         # self.resume_download_dir_var = tk.StringVar()
         # (Removida para limpeza de código)
         self.resume_link_text_var = tk.StringVar()
-        self.save_as_option_index_var = tk.IntVar(value=5)
 
         # Variáveis para configurações gerais de captura
-        self.max_scroll_iter_var = tk.IntVar(value=20)
         self.scroll_interval_var = tk.DoubleVar(value=2.0)
         
         # Variáveis do ETL (Filtro de Datas)
@@ -302,22 +300,10 @@ class SmartRecruiterGUI:
         self.resume_link_text_entry = ttk.Entry(link_text_frame, textvariable=self.resume_link_text_var, width=40)
         self.resume_link_text_entry.pack(side=tk.LEFT)
 
-        option_index_frame = ttk.Frame(settings_frame)
-        option_index_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(option_index_frame, text="Índice 'Guardar Como' (0=primeira):", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.save_as_option_index_spinbox = ttk.Spinbox(option_index_frame, from_=0, to=15, 
-                                                        textvariable=self.save_as_option_index_var, width=5)
-        self.save_as_option_index_spinbox.pack(side=tk.LEFT)
         
         ttk.Label(settings_frame, text="--- Configurações Gerais de Captura ---", 
                 font=('Arial', 10, 'bold')).pack(pady=(15, 5), anchor='w', padx=5)
 
-        scroll_iter_frame = ttk.Frame(settings_frame)
-        scroll_iter_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
-        ttk.Label(scroll_iter_frame, text="Máximo de Iterações de Scroll:", width=30).pack(side=tk.LEFT, padx=(0,5), anchor='w')
-        self.max_scroll_iter_spinbox = ttk.Spinbox(scroll_iter_frame, from_=1, to=100, 
-                                                textvariable=self.max_scroll_iter_var, width=5)
-        self.max_scroll_iter_spinbox.pack(side=tk.LEFT)
 
         scroll_interval_frame = ttk.Frame(settings_frame)
         scroll_interval_frame.pack(fill=tk.X, padx=10, pady=3, anchor='w')
@@ -370,16 +356,6 @@ class SmartRecruiterGUI:
         # self.resume_download_dir_var.set(self.config_manager.get_setting("resume_download_directory", default_download_dir))
         self.resume_link_text_var.set(self.config_manager.get_setting("resume_link_text", "Latest Resume"))
         
-        try:
-            self.save_as_option_index_var.set(int(self.config_manager.get_setting("context_menu_save_as_option_index", 5)))
-        except (ValueError, TypeError):
-            self.save_as_option_index_var.set(5)
-            self.config_manager.set_setting("context_menu_save_as_option_index", 5)
-        
-        try:
-            self.max_scroll_iter_var.set(int(self.config_manager.get_setting("max_scroll_iterations", 20)))
-        except (ValueError, TypeError):
-            self.max_scroll_iter_var.set(20)
         
         try:
             self.scroll_interval_var.set(float(self.config_manager.get_setting("scroll_interval", 2.0)))
@@ -417,15 +393,6 @@ class SmartRecruiterGUI:
         # self.config_manager.set_setting("resume_download_directory", self.resume_download_dir_var.get())
         self.config_manager.set_setting("resume_link_text", self.resume_link_text_var.get())
         
-        try:
-            self.config_manager.set_setting("context_menu_save_as_option_index", int(self.save_as_option_index_var.get()))
-        except ValueError: 
-            pass
-        
-        try:
-            self.config_manager.set_setting("max_scroll_iterations", int(self.max_scroll_iter_var.get()))
-        except ValueError:
-            pass
         
         try:
             self.config_manager.set_setting("scroll_interval", float(self.scroll_interval_var.get()))
@@ -549,7 +516,6 @@ class SmartRecruiterGUI:
         self.update_status("Capturando candidatos...")
         self.capture_button.config(text="Capturando...", state=tk.DISABLED)
         
-        self.bot.max_scroll_iterations = self.max_scroll_iter_var.get()
         try:
             self.bot.scroll_interval = float(self.scroll_interval_var.get())
         except ValueError:
