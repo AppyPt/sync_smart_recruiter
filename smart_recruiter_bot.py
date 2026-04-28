@@ -383,15 +383,40 @@ class SmartRecruiterBot:
                             if candidate_data.get("name") and candidate_data["name"].strip():
                                 candidate_name = candidate_data["name"].strip()
                                 if candidate_name not in processed_candidate_names:
-                                    final_candidate_entry = {
-                                        "name": candidate_name,
-                                        "profile": candidate_data.get("profile", "").strip(),
-                                        "date": candidate_data.get("date", "").strip(),
-                                        "location": candidate_data.get("location", "").strip() # <--- ADICIONADO AQUI
-                                    }
-                                    all_unique_candidates_data.append(final_candidate_entry)
+                                    # Registamos logo que vimos alguém novo para não quebrar a lógica do Scroll!
                                     processed_candidate_names.add(candidate_name)
                                     new_candidates_found_this_iteration += 1
+                                    
+                                    # =================================================================
+                                    # INÍCIO DO FILTRO DE CARGO POR IA (OLLAMA)
+                                    # =================================================================
+                                    candidate_profile = candidate_data.get("profile", "").strip()
+                                    self._log_to_gui(f"   🤖 A avaliar cargo com IA: '{candidate_profile}'...")
+                                    
+                                    # Instanciar o cliente do Ollama se ainda não existir nesta classe
+                                    if not hasattr(self, 'llm_client'):
+                                        from ollama_client import OllamaClient
+                                        self.llm_client = OllamaClient()
+                                        
+                                    ict_prob = self.llm_client.evaluate_ict_role_probability(candidate_profile)
+                                    
+                                    # Definimos o limiar de rejeição (ex: se for < 50%, é lixo)
+                                    if ict_prob < 50:
+                                        self._log_to_gui(f"   ❌ REJEITADO (Fail-Fast): '{candidate_name}' ignorado. Cargo '{candidate_profile}' não é TI (Probabilidade: {ict_prob}%).")
+                                        continue # Aborta este candidato e salta imediatamente para a célula seguinte!
+                                    else:
+                                        self._log_to_gui(f"   ✅ Aprovado pela IA (Probabilidade TIC: {ict_prob}%).")
+                                    # =================================================================
+                                    # FIM DO FILTRO DE CARGO POR IA
+                                    # =================================================================
+
+                                    final_candidate_entry = {
+                                        "name": candidate_name,
+                                        "profile": candidate_profile,
+                                        "date": candidate_data.get("date", "").strip(),
+                                        "location": candidate_data.get("location", "").strip()
+                                    }
+                                    all_unique_candidates_data.append(final_candidate_entry)
                                     
                                     self._log_to_gui(f"   ✓ Célula #{i+1}: {candidate_name}")
 
