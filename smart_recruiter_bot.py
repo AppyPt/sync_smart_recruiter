@@ -590,9 +590,6 @@ class SmartRecruiterBot:
             return None
 
         try:
-            if hasattr(self.image_processor, 'debug') and self.image_processor.debug:
-                os.makedirs(DEBUG_OUTPUT_DIR, exist_ok=True)
-
             region_image_pil = pyautogui.screenshot(region=(
                 search_area_coords_on_screen["left"],
                 search_area_coords_on_screen["top"],
@@ -600,10 +597,12 @@ class SmartRecruiterBot:
                 search_area_coords_on_screen["height"]
             ))
 
-            if "Latest Resume" in text_to_find:
-                debug_filename = f"debug_latest_resume_region_{time.strftime('%H%M%S')}.png"
-                region_image_pil.save(os.path.join(DEBUG_OUTPUT_DIR, debug_filename))
-                self._log_to_gui(f"Imagem da região de busca do 'Latest Resume' salva: {debug_filename}")
+            if hasattr(self.image_processor, 'debug') and self.image_processor.debug:
+                os.makedirs(DEBUG_OUTPUT_DIR, exist_ok=True)
+                if "Latest Resume" in text_to_find:
+                    debug_filename = f"debug_latest_resume_region_{time.strftime('%H%M%S')}.png"
+                    region_image_pil.save(os.path.join(DEBUG_OUTPUT_DIR, debug_filename))
+                    self._log_to_gui(f"Imagem da região de busca do 'Latest Resume' salva: {debug_filename}")
 
             text_box_in_region_image = self.image_processor.get_text_bounding_box(region_image_pil, text_to_find)
             
@@ -739,10 +738,6 @@ class SmartRecruiterBot:
         self._log_to_gui(f"\n=== Processando página de perfil para: {candidate_name} ===")
         time.sleep(2)
 
-        debug_was_active = False
-        if hasattr(self.image_processor, 'debug'):
-            debug_was_active = self.image_processor.debug
-            self.image_processor.debug = True
 
         resume_link_variations = [
             "Latest Resume",
@@ -813,9 +808,6 @@ class SmartRecruiterBot:
         self._log_to_gui("Tentando fechar a janela do perfil...")
         pyautogui.hotkey('alt', 'f4')
         time.sleep(2)
-
-        if hasattr(self.image_processor, 'debug'):
-            self.image_processor.debug = debug_was_active
 
         self._log_to_gui("=== Processamento do perfil concluído com falhas ===\n")
         return False

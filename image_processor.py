@@ -578,9 +578,9 @@ class ImageProcessor:
                                                 max_circle_radius=40,
                                                 hough_dp=1.2,
                                                 hough_min_dist_ratio=0.2,
-                                                hough_param1=30,  # <-- BAIXAMOS de 60 para 30 (Vê melhor cores claras/pastel)
-                                                hough_param2=18,  # <-- BAIXAMOS de 35 para 18 (Aceita círculos imperfeitos/com fotos)
-                                                circle_filter_max_x_ratio=0.25,
+                                                hough_param1=30,  
+                                                hough_param2=18,  
+                                                circle_filter_max_x_ratio=0.25, # Este parâmetro pode ser o culpado se a lista não estiver colada à esquerda!
                                                 cell_y_offset_from_circle_center=-45,
                                                 min_cell_height=50):
         """Identifies candidate cells in an image based on profile circles."""
@@ -623,8 +623,15 @@ class ImageProcessor:
                     center_y = int(c_data[1])
                     radius = int(c_data[2])
                     
-                    if center_x > img_width * circle_filter_max_x_ratio: 
+                    # --- CORREÇÃO DO PROBLEMA DE REJEIÇÃO MASSIVA ---
+                    # Em vez de uma ratio abstrata e frágil baseada na janela inteira,
+                    # vamos assumir algo muito mais seguro: 
+                    # Na UI do SmartRecruiters, os círculos de avatar das listas
+                    # estão consistentemente entre 30px e 150px a partir da margem esquerda da caixa da lista.
+                    if center_x < 20 or center_x > 200: 
+                        print(f"IP: Círculo ignorado pelo filtro X inicial. X={center_x} (esperado entre 20 e 200).")
                         continue
+                    # ------------------------------------------------
                     
                     detected_circles_info.append({
                         'center_x_abs': center_x, 
@@ -636,21 +643,18 @@ class ImageProcessor:
             border_margin = max(min_circle_radius * 1.5, 30)  # Safety margin
             filtered_circles = []
             
-            print(f"\nIP: Filtrando círculos próximos às bordas (margem: {border_margin}px)...")
+            print(f"\nIP: Filtrando círculos próximos às bordas verticais (margem: {border_margin}px)...")
             
             for circle_info in detected_circles_info:
                 cx = circle_info['center_x_abs']
                 cy = circle_info['center_y_abs']
                 radius = circle_info['radius']
                 
-                # Check if circle is fully inside image with margin
-                if (cx - radius > border_margin and 
-                    cy - radius > border_margin and
-                    cx + radius < img_width - border_margin and
-                    cy + radius < img_height - border_margin):
+                # Check if circle is fully inside image vertically
+                if (cy - radius > border_margin and cy + radius < img_height - border_margin):
                     filtered_circles.append(circle_info)
                 else:
-                    print(f"IP: Círculo em ({cx},{cy}) ignorado por estar muito próximo à borda.")
+                    print(f"IP: Círculo em ({cx},{cy}) ignorado por estar muito próximo à borda (Top/Bottom).")
             
             print(f"IP: {len(detected_circles_info) - len(filtered_circles)} círculos removidos por proximidade às bordas.")
             detected_circles_info = filtered_circles
@@ -665,14 +669,15 @@ class ImageProcessor:
                 x_coords = [c['center_x_abs'] for c in detected_circles_info]
                 # A mediana ignora os outliers (círculos falsos) e encontra a coluna real
                 median_x = statistics.median(x_coords)
+                print(f"IP: Mediana calculada para o eixo X dos avatares: {median_x}")
                 
                 aligned_circles = []
                 for c in detected_circles_info:
-                    # Só aceita círculos que estejam a +/- 15 pixeis da coluna central
-                    if abs(c['center_x_abs'] - median_x) <= 15:
+                    # Só aceita círculos que estejam a +/- 20 pixeis da coluna central (aumentada margem)
+                    if abs(c['center_x_abs'] - median_x) <= 20:
                         aligned_circles.append(c)
                     else:
-                        print(f"IP: Círculo FALSO rejeitado em ({c['center_x_abs']}, {c['center_y_abs']}) - Fora do eixo X.")
+                        print(f"IP: Círculo FALSO rejeitado em ({c['center_x_abs']}, {c['center_y_abs']}) - Fora do eixo X real. Distância da mediana: {abs(c['center_x_abs'] - median_x)}")
                 
                 detected_circles_info = aligned_circles
                 
@@ -681,8 +686,8 @@ class ImageProcessor:
                     # Draw border margins for visualization
                     cv2.rectangle(
                         debug_img_circles,
-                        (int(border_margin), int(border_margin)),
-                        (int(img_width - border_margin), int(img_height - border_margin)),
+                        (0, int(border_margin)),
+                        (int(img_width), int(img_height - border_margin)),
                         (0, 255, 255),  # Yellow color for margin visualization
                         2
                     )
