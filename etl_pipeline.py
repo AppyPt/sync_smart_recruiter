@@ -122,7 +122,7 @@ class ETLPipeline:
         if not name:
             return False, "Nome do candidato ausente, a ignorar."
 
-        candidate_hash = self._generate_candidate_hash(name, profile)
+        candidate_hash = self.generate_candidate_hash(name, profile)
         now = datetime.utcnow()
         
         # 1. Tratar o ficheiro CV
