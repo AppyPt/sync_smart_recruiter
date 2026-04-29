@@ -65,10 +65,23 @@ class ETLPipeline:
             self.log(f"ETL: Erro ao ligar ao Azure Blob: {e}")
             return False
 
-    def _generate_candidate_hash(self, name, profile):
+    def generate_candidate_hash(self, name, profile):
         """Gera um hash único baseado no nome e perfil para evitar duplicados."""
         raw_string = f"{str(name).lower().strip()}{str(profile).lower().strip()}"
         return hashlib.md5(raw_string.encode('utf-8')).hexdigest()
+
+    def candidato_existe(self, candidate_hash):
+        """Verifica se um candidato já existe na base de dados pelo seu hash."""
+        if not self._connect_mongo():
+            return False  # Se falhar a ligação, assume que não existe para processar
+
+        try:
+            # Procura se existe pelo menos um documento com este hash
+            count = self.candidates_collection.count_documents({"candidate_hash": candidate_hash}, limit=1)
+            return count > 0
+        except Exception as e:
+            self.log(f"ETL: Erro ao verificar existência do candidato: {e}")
+            return False
 
     def upload_cv_to_blob(self, local_file_path):
         """Faz o upload do ficheiro PDF para o Azure Blob e retorna o URL público."""

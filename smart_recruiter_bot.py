@@ -429,6 +429,26 @@ class SmartRecruiterBot:
                                         continue # Aborta este candidato e salta imediatamente para a célula seguinte!
                                     else:
                                         self._log_to_gui(f"   ✅ Aprovado pela IA (Probabilidade TIC: {ict_prob}%).")
+                                    
+                                    # =================================================================
+                                    # NOVO FILTRO: VERIFICAÇÃO DE DUPLICADO NA BD (OTIMIZAÇÃO)
+                                    # =================================================================
+                                    candidate_hash = self.etl_pipeline.generate_candidate_hash(candidate_name, candidate_profile)
+                                    
+                                    if self.etl_pipeline.candidato_existe(candidate_hash):
+                                        self._log_to_gui(f"   ⏭️ SALTO: '{candidate_name}' já existe na base de dados. Ignorando download.")
+                                        
+                                        # Criamos a entrada para as estatísticas, mas sem marcar como download
+                                        final_candidate_entry = {
+                                            "name": candidate_name,
+                                            "profile": candidate_profile,
+                                            "date": candidate_data.get("date", "").strip(),
+                                            "location": candidate_data.get("location", "").strip(),
+                                            "status": "ALREADY_EXISTS"
+                                        }
+                                        all_unique_candidates_data.append(final_candidate_entry)
+                                        continue # Pula para o próximo candidato da lista IMEDIATAMENTE
+                                    # =================================================================
                                     # =================================================================
                                     # FIM DO FILTRO DE CARGO POR IA
                                     # =================================================================
