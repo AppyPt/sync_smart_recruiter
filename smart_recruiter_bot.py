@@ -591,8 +591,8 @@ class SmartRecruiterBot:
                     consecutive_iterations_without_new_candidates = 0
 
                 # Check termination conditions
-                if consecutive_iterations_without_new_candidates >= 3:
-                    self._log_to_gui("Nenhum novo candidato encontrado em 3 iterações consecutivas. Finalizando captura.")
+                if consecutive_iterations_without_new_candidates >= 6:
+                    self._log_to_gui("Nenhum novo candidato encontrado em 6 iterações consecutivas. Finalizando captura.")
                     break
 
 
