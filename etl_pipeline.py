@@ -31,7 +31,7 @@ class ETLPipeline:
             return False
             
         try:
-            self.mongo_client = MongoClient(conn_str, tlsDisableOCSPEndpointCheck=True)
+            self.mongo_client = MongoClient(conn_str, tlsAllowInvalidCertificates=True)
             self.db = self.mongo_client[db_name]
             self.candidates_collection = self.db['candidates']
             
