@@ -154,6 +154,7 @@ class ETLPipeline:
              "$set": {
                  "profile": profile, # Movemos o profile para $set caso a pessoa mude de cargo
                  "location": candidate_info.get("location", ""), # <--- NOVO CAMPO INJETADO
+                 "profile_url": candidate_info.get("profile_url", ""), # <--- NOVO CAMPO
                  "last_capture_at": now,
                  "etl_status": "PROCESSED",
                  "cv_metadata": {

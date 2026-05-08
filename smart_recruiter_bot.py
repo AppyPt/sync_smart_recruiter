@@ -510,10 +510,13 @@ class SmartRecruiterBot:
                                             # Chama a função que já tens pronta para baixar o CV e fechar a janela
                                             # Chama a função que já tens pronta para baixar o CV e fechar a janela
                                             # Agora devolve o PATH em vez de um booleano
-                                            local_cv_path = self.process_candidate_profile_page(
+                                            local_cv_path, profile_url = self.process_candidate_profile_page(
                                                 candidate_name, 
                                                 final_candidate_entry["profile"]
                                             )
+                                            
+                                            if profile_url:
+                                                final_candidate_entry["profile_url"] = profile_url
                                             
                                             if local_cv_path: # Se não for falso
                                                 self._log_to_gui(f"   ✅ CV de {candidate_name} guardado localmente com sucesso!")
@@ -818,6 +821,32 @@ class SmartRecruiterBot:
         time.sleep(2)
 
         # ======================================================
+        # NOVO: CAPTURAR O URL DA PÁGINA
+        # ======================================================
+        self._log_to_gui("A capturar URL do perfil...")
+        candidate_url = ""
+        try:
+            import pyperclip
+            pyperclip.copy("")  # Limpar a área de transferência primeiro
+
+            pyautogui.hotkey('ctrl', 'l')  # Focar na barra de endereço do Chrome
+            time.sleep(0.5)
+            pyautogui.hotkey('ctrl', 'c')  # Copiar o URL
+            time.sleep(0.5)
+
+            captured_text = pyperclip.paste()
+            if "smartrecruiters.com" in captured_text:
+                candidate_url = captured_text.strip()
+                self._log_to_gui(f"🔗 URL capturado: {candidate_url}")
+            else:
+                self._log_to_gui("AVISO: URL capturado não parece ser válido.")
+
+            pyautogui.press('esc')  # Pressionar ESC para tirar o foco da barra de endereço
+        except Exception as e:
+            self._log_to_gui(f"⚠️ Erro ao tentar capturar URL: {e}")
+        # ======================================================
+
+        # ======================================================
         # INÍCIO DA VALIDAÇÃO DO INDICATIVO TELEFÓNICO (+351)
         # ======================================================
         self._log_to_gui("A validar indicativo de telefone (+351)...")
@@ -842,7 +871,7 @@ class SmartRecruiterBot:
                 self._log_to_gui("Fechando janela do perfil com Alt+F4...")
                 pyautogui.hotkey('alt', 'f4')
                 time.sleep(1.0)
-                return False  # Aborta imediatamente e diz à rotina principal que falhou/rejeitou
+                return False, None  # Aborta imediatamente e diz à rotina principal que falhou/rejeitou
             else:
                 self._log_to_gui("✅ Indicativo de Portugal detetado. Prosseguindo para o CV...")
         except Exception as e:
@@ -908,12 +937,11 @@ class SmartRecruiterBot:
                 pyautogui.hotkey('alt', 'f4')
                 time.sleep(1.0)
                 self._log_to_gui("=== Processamento do perfil concluído com sucesso ===")
-                return success # Devolver o caminho até cá acima
+                return success, candidate_url # Devolver o caminho até cá acima
             else:
                 self._log_to_gui("Download falhou na etapa final.")
                 pyautogui.hotkey('alt', 'f4')
-                return False
-            # ---------------------------------------------
+                return False, None
         else:
             self._log_to_gui("AVISO: Não foi possível encontrar o link do currículo após tentar todas as variações.")
 
