@@ -310,6 +310,21 @@ class SmartRecruiterBot:
                 if self.stop_requested:
                     self._log_to_gui("🛑 Captura interrompida pelo utilizador.")
                     break
+                
+                # =================================================================
+                # SANITY CHECK: O CHROME AINDA ESTÁ ABERTO E NA PÁGINA CERTA?
+                # =================================================================
+                if gw:
+                    try:
+                        active_win = gw.getActiveWindow()
+                        if active_win and "SmartRecruiters" not in active_win.title:
+                            self._log_to_gui(f"🚨 ALARME: A janela ativa é '{active_win.title}' e não o SmartRecruiters!")
+                            self._log_to_gui("O Chrome parece ter fechado ou perdido o foco. Abortando operação por segurança.")
+                            break
+                    except Exception as e_win:
+                        pass # Ignora erros se não conseguir ler o título da janela
+                # =================================================================
+
                 iteration += 1
                 
                 # ✅ ALTERAÇÃO 5: Logging melhorado
