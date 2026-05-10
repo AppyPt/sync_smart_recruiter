@@ -489,9 +489,21 @@ class SmartRecruiterBot:
 
                                         self._log_to_gui(f"   📥 Iniciando extração do CV para: {candidate_name}")
                                         try:
+                                            # ---> OBTER TÍTULO DA JANELA PRINCIPAL <---
+                                            main_window_title = None
+                                            if gw:
+                                                try:
+                                                    active_win_before = gw.getActiveWindow()
+                                                    if active_win_before:
+                                                        main_window_title = active_win_before.title
+                                                except Exception:
+                                                    pass
+
                                             # Shift+Click abre o link numa NOVA JANELA no Chrome
                                             pyautogui.keyDown('shift')
+                                            time.sleep(0.2) # <-- Atraso de segurança para o Linux registar o Shift
                                             pyautogui.click(name_link_x_on_screen, name_link_y_on_screen)
+                                            time.sleep(0.2) # <-- Atraso de segurança
                                             pyautogui.keyUp('shift')
 
                                             # Aguarda a página do perfil carregar (sleep seguro/interrompível)
@@ -507,12 +519,11 @@ class SmartRecruiterBot:
                                             if self.stop_requested:
                                                 continue # Salta este candidato e sai do ciclo
                                             
-                                            # Chama a função que já tens pronta para baixar o CV e fechar a janela
-                                            # Chama a função que já tens pronta para baixar o CV e fechar a janela
-                                            # Agora devolve o PATH em vez de um booleano
+                                            # Chama a função e PASSA O TÍTULO DA JANELA PRINCIPAL
                                             local_cv_path, profile_url = self.process_candidate_profile_page(
                                                 candidate_name, 
-                                                final_candidate_entry["profile"]
+                                                final_candidate_entry["profile"],
+                                                original_window_title=main_window_title # <--- Alteração AQUI
                                             )
                                             
                                             if profile_url:
@@ -815,6 +826,25 @@ class SmartRecruiterBot:
         
         return full_path_to_save # Devolve a string do caminho original
 
+    def _safe_close_profile_window(self, original_window_title):
+        """Fecha a janela apenas se não for a janela principal da lista."""
+        if not gw:
+            # Se o gestor de janelas (xdotool) não estiver disponível, fecha às cegas
+            self._log_to_gui("Fechando janela com Alt+F4 (Sem proteção gw)...")
+            pyautogui.hotkey('alt', 'f4')
+            return
+
+        try:
+            current_win = gw.getActiveWindow()
+            if current_win and original_window_title and current_win.title == original_window_title:
+                self._log_to_gui("🛡️ PROTEÇÃO ATIVA: A janela atual é a lista principal! Ignorando Alt+F4 para não fechar o SmartRecruiters.")
+            else:
+                self._log_to_gui("Fechando janela do perfil com Alt+F4...")
+                pyautogui.hotkey('alt', 'f4')
+        except Exception as e:
+            self._log_to_gui(f"⚠️ Erro ao verificar janela para fechar: {e}. Executando Alt+F4 por precaução.")
+            pyautogui.hotkey('alt', 'f4')
+
     def process_candidate_profile_page(self, candidate_name, candidate_profile, original_window_title=None):
         """Processa a página de perfil do candidato."""
         self._log_to_gui(f"\n=== Processando página de perfil para: {candidate_name} ===")
@@ -869,7 +899,7 @@ class SmartRecruiterBot:
             if "+351" not in clean_header and "00351" not in clean_header:
                 self._log_to_gui("❌ CANDIDATO REJEITADO: Sem indicativo PT (+351) no perfil.")
                 self._log_to_gui("Fechando janela do perfil com Alt+F4...")
-                pyautogui.hotkey('alt', 'f4')
+                self._safe_close_profile_window(original_window_title)
                 time.sleep(1.0)
                 return False, None  # Aborta imediatamente e diz à rotina principal que falhou/rejeitou
             else:
@@ -934,19 +964,19 @@ class SmartRecruiterBot:
             # --- NOVO: Lidar com o caminho devolvido ---
             if isinstance(success, str): # Se for uma string (o caminho), o download funcionou
                 self._log_to_gui("Download concluído. Fechando janela do perfil com Alt+F4...")
-                pyautogui.hotkey('alt', 'f4')
+                self._safe_close_profile_window(original_window_title)
                 time.sleep(1.0)
                 self._log_to_gui("=== Processamento do perfil concluído com sucesso ===")
                 return success, candidate_url # Devolver o caminho até cá acima
             else:
                 self._log_to_gui("Download falhou na etapa final.")
-                pyautogui.hotkey('alt', 'f4')
+                self._safe_close_profile_window(original_window_title)
                 return False, None
         else:
             self._log_to_gui("AVISO: Não foi possível encontrar o link do currículo após tentar todas as variações.")
 
         self._log_to_gui("Tentando fechar a janela do perfil...")
-        pyautogui.hotkey('alt', 'f4')
+        self._safe_close_profile_window(original_window_title)
         time.sleep(2)
 
         self._log_to_gui("=== Processamento do perfil concluído com falhas ===\n")
