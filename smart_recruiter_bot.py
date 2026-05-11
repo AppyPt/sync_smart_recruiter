@@ -829,21 +829,27 @@ class SmartRecruiterBot:
     def _safe_close_profile_window(self, original_window_title):
         """Fecha a janela apenas se não for a janela principal da lista."""
         if not gw:
-            # Se o gestor de janelas (xdotool) não estiver disponível, fecha às cegas
-            self._log_to_gui("Fechando janela com Alt+F4 (Sem proteção gw)...")
-            pyautogui.hotkey('alt', 'f4')
+            self._log_to_gui("Fechando janela com Ctrl+W (Sem proteção gw)...")
+            pyautogui.hotkey('ctrl', 'w')
+            time.sleep(1)
             return
 
         try:
             current_win = gw.getActiveWindow()
             if current_win and original_window_title and current_win.title == original_window_title:
-                self._log_to_gui("🛡️ PROTEÇÃO ATIVA: A janela atual é a lista principal! Ignorando Alt+F4 para não fechar o SmartRecruiters.")
+                self._log_to_gui("🛡️ PROTEÇÃO ATIVA: A janela atual é a lista principal! Ignorando fecho...")
+                
+                self._log_to_gui("🔙 Navegando para trás para voltar à lista principal...")
+                pyautogui.hotkey('alt', 'left')
+                time.sleep(3) 
             else:
-                self._log_to_gui("Fechando janela do perfil com Alt+F4...")
-                pyautogui.hotkey('alt', 'f4')
+                self._log_to_gui("Fechando janela do perfil com Ctrl+W...")
+                pyautogui.hotkey('ctrl', 'w')
+                time.sleep(1.5)
         except Exception as e:
-            self._log_to_gui(f"⚠️ Erro ao verificar janela para fechar: {e}. Executando Alt+F4 por precaução.")
-            pyautogui.hotkey('alt', 'f4')
+            self._log_to_gui(f"⚠️ Erro ao verificar janela para fechar: {e}. Executando Ctrl+W por precaução.")
+            pyautogui.hotkey('ctrl', 'w')
+            time.sleep(1.5)
 
     def process_candidate_profile_page(self, candidate_name, candidate_profile, original_window_title=None):
         """Processa a página de perfil do candidato."""
