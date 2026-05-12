@@ -828,6 +828,13 @@ class SmartRecruiterBot:
 
     def _safe_close_profile_window(self, original_window_title):
         """Fecha a janela apenas se não for a janela principal da lista."""
+        
+        # ---> NOVO: O "Limpa Para-brisas" de Menus! <---
+        self._log_to_gui("Limpando possíveis menus abertos com ESC...")
+        pyautogui.press('esc')
+        time.sleep(0.5) 
+        # -----------------------------------------------
+
         if not gw:
             self._log_to_gui("Fechando janela com Ctrl+W (Sem proteção gw)...")
             pyautogui.hotkey('ctrl', 'w')
