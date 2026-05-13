@@ -829,11 +829,9 @@ class SmartRecruiterBot:
     def _safe_close_profile_window(self, original_window_title):
         """Fecha a janela apenas se não for a janela principal da lista."""
         
-        # ---> NOVO: O "Limpa Para-brisas" de Menus! <---
         self._log_to_gui("Limpando possíveis menus abertos com ESC...")
         pyautogui.press('esc')
         time.sleep(0.5) 
-        # -----------------------------------------------
 
         if not gw:
             self._log_to_gui("Fechando janela com Ctrl+W (Sem proteção gw)...")
@@ -844,15 +842,13 @@ class SmartRecruiterBot:
         try:
             current_win = gw.getActiveWindow()
             if current_win and original_window_title and current_win.title == original_window_title:
-                self._log_to_gui("🛡️ PROTEÇÃO ATIVA: A janela atual é a lista principal! Ignorando fecho...")
-                
-                self._log_to_gui("🔙 Navegando para trás para voltar à lista principal...")
-                pyautogui.hotkey('alt', 'left')
-                time.sleep(3) 
+                self._log_to_gui("🛡️ PROTEÇÃO ATIVA: A janela atual é a lista principal! O clique deve ter falhado.")
+                self._log_to_gui("Ignorando fecho e mantendo a página atual para não perder a lista.")
+                # REMOVIDO: Já não fazemos Alt+Left aqui!
             else:
                 self._log_to_gui("Fechando janela do perfil com Ctrl+W...")
                 pyautogui.hotkey('ctrl', 'w')
-                time.sleep(1.5)
+                time.sleep(1.5) 
         except Exception as e:
             self._log_to_gui(f"⚠️ Erro ao verificar janela para fechar: {e}. Executando Ctrl+W por precaução.")
             pyautogui.hotkey('ctrl', 'w')
